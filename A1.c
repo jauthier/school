@@ -105,9 +105,7 @@ int lsAll(){
     }
 
     while ((dirEntry = readdir(dir)) != NULL) {
-        if (dirEntry->d_type == Dt_REG) {
-            printf("%s\n",dirEntry->d_name);
-        }
+        printf("%s\n",dirEntry->d_name);
     }
 
 }
