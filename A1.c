@@ -94,7 +94,22 @@ int lsNoArgs(){
 }
 
 int lsAll(){
-	printf("here");
+    struct dirent * dirEntry;
+    char cwd[200];
+    getcwd(cwd, sizeof(cwd));
+    DIR *dir = opendir(cwd);
+
+    if (dir == NULL){
+        printf("\n");
+        return 0;
+    }
+
+    while ((dirEntry = readdir(dir)) != NULL) {
+        if (dirEntry->d_type == Dt_REG) {
+            printf("%s\n",dirEntry->d_name);
+        }
+    }
+
 }
 
 int checkPipe(char *str){
