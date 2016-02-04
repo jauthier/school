@@ -1,12 +1,12 @@
-#include <stdio.h>
+#include <ls.h>
 
-int lsMenu (){
+int lsMenu (char ** args, int numArgs){
     if (numArgs == 1){//no arguments
         lsNoArgs();
     }else if (strcmp(args[1],"-a")==0){
         lsAll();
     }
-    
+    return 0;
 }
 
 int lsNoArgs(){
@@ -26,6 +26,7 @@ int lsNoArgs(){
             printf("%s\n",dirEntry->d_name);
         }
     }
+	return 0;
 }
 
 int lsAll(){
@@ -42,5 +43,6 @@ int lsAll(){
     while ((dirEntry = readdir(dir)) != NULL) {
         printf("%s\n",dirEntry->d_name);
     }
+	return 0;
 
 }
