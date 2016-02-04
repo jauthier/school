@@ -28,25 +28,104 @@ int main(){
 		/*for (i=0;i<numArgs;i++){
 			printf("%s",args[i]);
 		}*/
-
-		strcpy(fullPath, path);
-		strcat(fullPath, args[0]);
-
-		printf("%s",fullPath);
+		
+		//printf("%s",fullPath);
 
 		int pid = fork();
 		if (pid == 0){
 			printf("\nIn child process\n");
-			execvp(fullPath,args);
+			if (checkPipe(buffer)==1){
+            
+			} else if (checkInRedir(buffer)==1){
+             
+			} else if (checkOutRedir(buffer)==1){
 
-		}else {
+			} else if (checkBackground(buffer)==1){
+
+			}else {
+				execProcess(args);
+			}	
+		}else if (pid > 0){
 			printf("\nIn parent process\n");
 			wait(NULL);
 			printf("\nChild exited\n");
+		}else {
+			//error
+			
 		}
 
 
     }
+}	
+int execProcess(char **args){
+	char *path = "/bin/";
+	char fullPath[20];
 
+	strcpy(fullPath, path);
+	srtcat(fullPath, args[0]);
+	execvp(fullPath, args);
+}
 
+/*returns 1 if there is a |*/
+int checkPipe(char *str){
+    
+    int len = strlen(str);
+    int i = 0;
+    char letter;
+    
+    for (i=0;i<len;i++){
+        letter = str[i];
+        if (letter == '|'){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*returns 1 if ther is a <*/
+int checkInRedir(char *str){
+    
+    int len = strlen(str);
+    int i = 0;
+    char letter;
+    
+    for (i=0;i<len;i++){
+        letter = str[i];
+        if (letter == '<'){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*returns 1 if ther is a >*/
+int checkOutRedir(char *str){
+    
+    int len = strlen(str);
+    int i = 0;
+    char letter;
+    
+    for (i=0;i<len;i++){
+        letter = str[i];
+        if (letter == '>'){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*returns 1 if ther is a &*/
+int checkBackground(char *str){
+
+	int len = strlen(str);
+	int i = 0;
+	char letter;
+
+	for (i=0;i<len;i++){
+		letter = str[i];
+		if (letter == '&'){
+			return 1;
+		}
+	}
+	return 0;
 }
