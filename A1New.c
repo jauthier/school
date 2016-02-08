@@ -6,6 +6,7 @@
 
 void forkInBack(char** args, int i);
 void forkInFore(char** args, int i);
+void menu(char** args, int i);
 void execProcess(char **args);
 void outRedir(char **args, int numArgs);
 int checkPipe(char **args, int numArgs);
@@ -63,19 +64,7 @@ void forkInBack (char** args, int i){
 	pid_t pid = fork();
 
 	if (pid == 0){
-		printf("In child\n");
-		
-		if (checkPipe(args, i)==1)
-			printf(" ");
-			
-		else if (checkInRedir(args, i)==1)
-			printf(" ");
-			
-		else if (checkOutRedir(args, i)==1)
-			outRedir(args, i);
-		else
-			execProcess(args);
-		
+		menu(args,i);		
 	} else if (pid > 0){
 		printf("In parent\n");
 		waitpid(pid, &status, WNOHANG);
@@ -90,20 +79,7 @@ void forkInFore (char **args, int i){
 	int pid = fork();
 
 	if (pid == 0){
-
-		printf("In child\n");
-		printf("another thing");
-
-		if (checkPipe(args, i)==1){
-			printf(" ");
-		}else if (checkInRedir(args, i)==1){
-			printf(" ");
-		}else if (checkOutRedir(args, i)==1){
-			printf("here");
-			outRedir(args,i);
-		}else
-			execProcess(args);
-
+		menu(args, i);
 	}else if (pid > 0){
 		printf("In parent\n");
 		wait(pid,&status,0);
@@ -114,7 +90,20 @@ void forkInFore (char **args, int i){
 	
 }
 
+void menu(char** args, int i){
+	printf("In child\n");
 
+	if (checkPipe(args, i)==1){
+		printf(" ");
+	}else if (checkInRedir(args, i)==1){
+		printf(" ");
+	}else if (checkOutRedir(args, i)==1){
+		printf("here");
+		outRedir(args,i);
+	}else
+		execProcess(args);
+
+}
 
 	
 void execProcess(char **args){
