@@ -4,6 +4,8 @@
 #include <signal.h>
 
 
+void forkInBack(char** args, int i);
+void forkInFore(char** args, int i);
 void execProcess(char **args);
 int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
@@ -28,8 +30,8 @@ int main(int argc, char * argv[]){
 		fgets(buffer, 500, stdin);
 		
 		//checks if the command is exit
-		if (strcmp(buffer, "exit")==0){
-			printf("logout\n\n[Process completed]");
+		if (strcmp(buffer, "exit\n")==0){
+			printf("logout\n\n[Process completed]\n");
 			exit(0);
 		}
 		
@@ -49,24 +51,27 @@ int main(int argc, char * argv[]){
 		}
 			
 		if (isBackground == 1)
-			forkInBack();
+			forkInBack(args, i);
 		else
-			forkInFore();
+			forkInFore(args, i);
 	}
 }
 
-void forkInBack (){
+void forkInBack (char** args, int i){
 	int status;
 	pid_t pid = fork();
-		
+
 	if (pid == 0){
 		printf("In child\n");
 		
 		if (checkPipe(args, i)==1)
+			printf(" ");
 			
 		else if (checkInRedir(args, i)==1)
+			printf(" ");
 			
 		else if (checkOutRedir(args, i)==1)
+			printf(" ");
 			
 		else
 			execProcess(args);
@@ -80,7 +85,7 @@ void forkInBack (){
 	}
 }
 
-void forkInFore (){
+void forkInFore (char **args, int i){
 	int status;
 	pid_t pid = fork();
 		
@@ -88,10 +93,12 @@ void forkInFore (){
 		printf("In child\n");
 		
 		if (checkPipe(args, i)==1)
-			
+			printf(" ");
 		else if (checkInRedir(args, i)==1)
+			printf(" ");
 			
 		else if (checkOutRedir(args, i)==1)
+			printf(" ");
 			
 		else
 			execProcess(args);
@@ -116,7 +123,7 @@ void execProcess(char **args){
 	char fullPath[20];
 
 	strcpy(fullPath, path);
-	srtcat(fullPath, args[0]);
+	strcat(fullPath, args[0]);
 	execvp(fullPath, args);
 }
 
@@ -173,7 +180,11 @@ int checkBackground(char **args, int numArgs){
 	return 0;
 }
 
+void inRedir(){
 
+}
 
+void outRedir(){
 
+}
 
