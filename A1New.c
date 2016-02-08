@@ -7,6 +7,7 @@
 void forkInBack(char** args, int i);
 void forkInFore(char** args, int i);
 void execProcess(char **args);
+void outRedir(char **args, int numArgs);
 int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
 int checkOutRedir(char **args, int numArgs);
@@ -71,8 +72,7 @@ void forkInBack (char** args, int i){
 			printf(" ");
 			
 		else if (checkOutRedir(args, i)==1)
-			printf(" ");
-			
+			outRedir(args, i);
 		else
 			execProcess(args);
 		
@@ -87,26 +87,27 @@ void forkInBack (char** args, int i){
 
 void forkInFore (char **args, int i){
 	int status;
-	pid_t pid = fork();
-		
+	int pid = fork();
+
 	if (pid == 0){
+
 		printf("In child\n");
-		
-		if (checkPipe(args, i)==1)
+		printf("another thing");
+
+		if (checkPipe(args, i)==1){
 			printf(" ");
-		else if (checkInRedir(args, i)==1)
+		}else if (checkInRedir(args, i)==1){
 			printf(" ");
-			
-		else if (checkOutRedir(args, i)==1)
-			printf(" ");
-			
-		else
+		}else if (checkOutRedir(args, i)==1){
+			printf("here");
+			outRedir(args,i);
+		}else
 			execProcess(args);
-		
-	} else if (pid > 0){
+
+	}else if (pid > 0){
 		printf("In parent\n");
-		waitpid(pid, &status, 0);
-		
+		wait(pid,&status,0);
+		printf("child done\n");
 	}else {
 		printf("Fork Failed\n");
 	}
@@ -160,6 +161,7 @@ int checkOutRedir(char **args, int numArgs){
 
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0){
+			printf("here");
 			return 1;
 		}
 	}
@@ -202,18 +204,21 @@ void outRedir(char **args, int numArgs){
 		if (strcmp(args[i], ">")==0)
 			break;
 	}
-	
-	outFile = args[i+1];
+	printf("%s",args[i]);
+
+	strcpy(outFile, args[i+1]);
 	
 	int j = 0;
 	for (j=0;j<i;j++){
 		strcpy(newArgs[j],args[j]);
 	}
-	
+	char path[20] = "/bin/";
+	strcat(path, newArgs[0]);
+
 	fp = freopen(outFile,"w",stdout);
 	
-	execProcess(newArgs);
+	execvp(path,newArgs);
 	
-	
+	fclose(fp);
 }
 
