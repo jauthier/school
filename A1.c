@@ -18,6 +18,7 @@ int main(int argc, char * argv[]){
     int done = 0;
     char *token;
     int i=0;
+    int numArgs;
 
     while (done == 0){
 
@@ -27,6 +28,15 @@ int main(int argc, char * argv[]){
 		fgets(buffer, 100, stdin);
 		//printf("%s",buffer);
 
+        token = strtok(buffer, " \n");
+        while (token!= NULL){
+            args[i]= malloc((strlen(token)+1)*sizeof(char));
+            strcpy(args[i], token);
+            token = strtok(NULL, " \n");
+            i++;
+        }
+        numArgs = i;
+
 		pid = fork();
 		if (pid < 0){
 			wait(NULL);
@@ -35,13 +45,7 @@ int main(int argc, char * argv[]){
 		} else {
 		// we are in the child process
     	    //split up commands by space
-			token = strtok(buffer, " \n");
-        	while (token!= NULL){
-            	args[i]= malloc((strlen(token)+1)*sizeof(char));
-            	strcpy(args[i], token);
-            	token = strtok(NULL, " \n");
-            	i++;
-        	}
+			
 
 		}
 
