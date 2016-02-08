@@ -6,7 +6,7 @@
 int checkPipe(char *str);
 int checkInRedir(char *str);
 int checkOutRedir(char *str);
-int checkBackground(char *str);
+int checkBackground(char **args, int numArgs);
 
 
 int main(int argc, char * argv[]){
@@ -46,7 +46,7 @@ int main(int argc, char * argv[]){
 		if (pid == 0){
 			printf("In child\n");
 			
-			if (checkBackground(buffer) == 1){
+			if (checkBackground(args,i) == 1){
 				args[i-1] = NULL;
 				isBackground = 1;
 			}
@@ -56,7 +56,7 @@ int main(int argc, char * argv[]){
 		} else if (pid > 0){
 			printf("In parent\n");
 		}else {
-			printf("Fork Failed\n")
+			printf("Fork Failed\n");
 		}
 		
 		
@@ -115,15 +115,12 @@ int checkOutRedir(char *str){
 }
 
 /*returns 1 if ther is a &*/
-int checkBackground(char *str){
+int checkBackground(char **args, int numArgs){
 
-	int len = strlen(str);
 	int i = 0;
-	char letter;
 
-	for (i=0;i<len;i++){
-		letter = str[i];
-		if (letter == '&'){
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], "&")==0){
 			return 1;
 		}
 	}
