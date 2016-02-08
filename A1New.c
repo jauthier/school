@@ -181,10 +181,39 @@ int checkBackground(char **args, int numArgs){
 }
 
 void inRedir(){
-
+	
+	FILE * fp;
+	char inFile[20];
+	
+	
+	
+	
 }
 
-void outRedir(){
-
+void outRedir(char **args, int numArgs){
+	
+	int i = 0;
+	char outFile[20];
+	char *newArgs[5];
+	FILE *fp;
+	
+	
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], ">")==0)
+			break;
+	}
+	
+	outFile = args[i+1];
+	
+	int j = 0;
+	for (j=0;j<i;j++){
+		strcpy(newArgs[j],args[j]);
+	}
+	
+	fp = freopen(outFile,"w",stdout);
+	
+	execProcess(newArgs);
+	
+	
 }
 
