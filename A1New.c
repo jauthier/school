@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
-
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <ctype.h>
 
 void forkInBack(char** args, int i);
 void forkInFore(char** args, int i);
@@ -46,16 +49,18 @@ int main(int argc, char * argv[]){
 			i++;
 		}
 		args[i] = NULL;
-		
+		printf("before");
 		if (checkBackground(args,i) == 1){
 			args[i-1] = NULL;
 			isBackground = 1;
 		}
-			
-		if (isBackground == 1)
+
+		if (isBackground == 1){
 			forkInBack(args, i);
-		else
+		}else{
+			printf("here");
 			forkInFore(args, i);
+		}
 	}
 }
 
@@ -64,7 +69,8 @@ void forkInBack (char** args, int i){
 	pid_t pid = fork();
 
 	if (pid == 0){
-		menu(args,i);		
+		menu(args,i);
+		exit(0);
 	} else if (pid > 0){
 		printf("In parent\n");
 		waitpid(pid, &status, WNOHANG);
@@ -76,13 +82,13 @@ void forkInBack (char** args, int i){
 
 void forkInFore (char **args, int i){
 	int status;
-	int pid = fork();
+	pid_t pid = fork();
 
 	if (pid == 0){
 		menu(args, i);
 	}else if (pid > 0){
 		printf("In parent\n");
-		wait(pid,&status,0);
+		waitpid(pid,&status,0);
 		printf("child done\n");
 	}else {
 		printf("Fork Failed\n");
@@ -92,23 +98,23 @@ void forkInFore (char **args, int i){
 
 void menu(char** args, int i){
 	printf("In child\n");
+	printf("wtf");
 
 	if (checkPipe(args, i)==1){
-		printf(" ");
+		printf("|");
 	}else if (checkInRedir(args, i)==1){
-		printf(" ");
+		printf("<");
 	}else if (checkOutRedir(args, i)==1){
-		printf("here");
+//		printf("here");
 		outRedir(args,i);
-	}else
+	}else{
+		printf("cat");
 		execProcess(args);
-
+	}
 }
 
-	
 void execProcess(char **args){
-			
-		
+
 	char *path = "/bin/";
 	char fullPath[20];
 
