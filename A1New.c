@@ -7,8 +7,6 @@
 #include <unistd.h>
 #include <ctype.h>
 
-void forkInBack(char** args, int i);
-void forkInFore(char** args, int i);
 void menu(char** args, int i);
 void execProcess(char **args);
 void outRedir(char **args, int numArgs);
@@ -54,62 +52,53 @@ int main(int argc, char * argv[]){
 			args[i-1] = NULL;
 			isBackground = 1;
 		}
-
+		
+		int status;
 		if (isBackground == 1){
-			forkInBack(args, i);
+			pid_t pid = fork();
+
+			if (pid == 0){
+				menu(args,i);
+				exit(0);
+			} else if (pid > 0){
+				printf("In parent\n");
+				waitpid(pid, &status, WNOHANG);
+		
+			}else {
+				printf("Fork Failed\n");
+			}
 		}else{
-			printf("here");
-			forkInFore(args, i);
+			pid_t pid = fork();
+
+			if (pid == 0){
+				menu(args, i);
+			}else if (pid > 0){
+				printf("In parent\n");
+				waitpid(pid,&status,0);
+				printf("child done\n");
+			}else {
+				printf("Fork Failed\n");
+			}
 		}
 	}
 }
 
-void forkInBack (char** args, int i){
-	int status;
-	pid_t pid = fork();
 
-	if (pid == 0){
-		menu(args,i);
-		exit(0);
-	} else if (pid > 0){
-		printf("In parent\n");
-		waitpid(pid, &status, WNOHANG);
-		
-	}else {
-		printf("Fork Failed\n");
-	}
-}
-
-void forkInFore (char **args, int i){
-	int status;
-	pid_t pid = fork();
-
-	if (pid == 0){
-		menu(args, i);
-	}else if (pid > 0){
-		printf("In parent\n");
-		waitpid(pid,&status,0);
-		printf("child done\n");
-	}else {
-		printf("Fork Failed\n");
-	}
-	
-}
 
 void menu(char** args, int i){
 	printf("In child\n");
-	printf("wtf");
+	printf("wtf\n");
 
 	if (checkPipe(args, i)==1){
 		printf("|");
 	}else if (checkInRedir(args, i)==1){
 		printf("<");
 	}else if (checkOutRedir(args, i)==1){
-//		printf("here");
-		outRedir(args,i);
+		printf(">");
+		//outRedir(args,i);
 	}else{
 		printf("cat");
-		execProcess(args);
+		//execProcess(args);
 	}
 }
 
