@@ -150,7 +150,7 @@ void outRedir(char **args, int numArgs){
 	char outFile[20];
 	char *newArgs[5];
 	FILE *fp;
-	
+	printf("made it here");
 	
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0)
