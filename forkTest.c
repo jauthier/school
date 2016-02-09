@@ -53,7 +53,21 @@ int main(int argc, char * argv[]){
 			
 			printf("In Child\n");
 			sleep(1);
-			menu(args, numArgs);
+			printf("In Menu\n");
+	printf("wtf\n");
+
+	if (checkPipe(args, i)==1){
+		printf("|");
+	}else if (checkInRedir(args, i)==1){
+		printf("<");
+	}else if (checkOutRedir(args, i)==1){
+		/*printf(">");*/
+		outRedir(args,i);
+	}else{
+		printf("cat");
+		//execProcess(args);
+	}
+	printf("end");
 			exit(status);
 			
 		}else if(pid > 0){
@@ -73,21 +87,7 @@ int main(int argc, char * argv[]){
 }
 
 void menu(char** args, int i){
-	printf("In Menu\n");
-	printf("wtf\n");
-
-	if (checkPipe(args, i)==1){
-		printf("|");
-	}else if (checkInRedir(args, i)==1){
-		printf("<");
-	}else if (checkOutRedir(args, i)==1){
-		/*printf(">");*/
-		outRedir(args,i);
-	}else{
-		printf("cat");
-		//execProcess(args);
-	}
-	printf("end");
+	
 }
 
 /*returns 1 if there is a |*/
