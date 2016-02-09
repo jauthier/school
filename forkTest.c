@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <ctype.h>
 
+void menu(char** args, int i);
+
 int main(int argc, char * argv[]){
 	
 	char buffer[500];
@@ -64,4 +66,21 @@ int main(int argc, char * argv[]){
 	}while(1);
 	
 	return 0;
+}
+
+void menu(char** args, int i){
+	printf("In Menu\n");
+	printf("wtf\n");
+
+	if (checkPipe(args, i)==1){
+		printf("|");
+	}else if (checkInRedir(args, i)==1){
+		printf("<");
+	}else if (checkOutRedir(args, i)==1){
+		printf(">");
+		//outRedir(args,i);
+	}else{
+		printf("cat");
+		//execProcess(args);
+	}
 }
