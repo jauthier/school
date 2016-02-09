@@ -63,7 +63,7 @@ int main(int argc, char * argv[]){
 				printf("<");
 			}else if (checkOutRedir(args, i)==1){
 				printf("%d",i);
-				//outRedir(args,i);
+				outRedir(args,i);
 			}else{
 				printf("cat");
 				//execProcess(args);
