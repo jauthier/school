@@ -18,12 +18,10 @@ int main(int argc, char * argv[]){
 	
 	char buffer[500];
 	char *args[10];
-	char *path = "/bin/";
-	char fullPath[20];
 	char *token;
 	int i;
 	int numArgs;
-	int isBackground;
+	//int isBackground;
 	
 	do{
 		int status = 0;
@@ -83,8 +81,8 @@ void menu(char** args, int i){
 	}else if (checkInRedir(args, i)==1){
 		printf("<");
 	}else if (checkOutRedir(args, i)==1){
-		printf(">");
-		//outRedir(args,i);
+		//printf(">");
+		outRedir(args,i);
 	}else{
 		printf("cat");
 		//execProcess(args);
