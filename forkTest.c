@@ -21,7 +21,7 @@ int main(int argc, char * argv[]){
 	char *token;
 	int i;
 	int numArgs;
-	//int isBackground;
+	int isBackground;
 	
 	do{
 		int status = 0;
