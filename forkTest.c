@@ -84,7 +84,7 @@ void menu(char** args, int i){
 		printf("<");
 	}else if (checkOutRedir(args, i)==1){
 		printf(">");
-		outRedir(args,i);
+		//outRedir(args,i);
 	}else{
 		printf("cat");
 		//execProcess(args);
@@ -125,7 +125,7 @@ int checkOutRedir(char **args, int numArgs){
 	printf("%d",numArgs);
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0){
-			printf("here");
+			//printf("here");
 			return 1;
 		}
 	}
