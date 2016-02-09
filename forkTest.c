@@ -54,6 +54,7 @@ int main(int argc, char * argv[]){
 			
 			printf("In Child\n");
 			sleep(1);
+			menu(args, numArgs);
 			exit(status);
 			
 		}else if(pid > 0){
