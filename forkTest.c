@@ -121,7 +121,7 @@ int checkInRedir(char **args, int numArgs){
 int checkOutRedir(char **args, int numArgs){
 
 	int i = 0;
-
+	printf("%d",numArgs);
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0){
 			printf("here");
