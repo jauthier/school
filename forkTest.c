@@ -59,9 +59,11 @@ int main(int argc, char * argv[]){
 
 			if (checkPipe(args, i)==1){
 				printf("|");
-			}else if (checkInRedir(args, i)==1){
+			}
+			if (checkInRedir(args, i)==1){
 				printf("<");
-			}else if (checkOutRedir(args, i)==1){
+			} 
+			if (checkOutRedir(args, i)==1){
 				printf("%d",i);
 				outRedir(args,i);
 			}else{
