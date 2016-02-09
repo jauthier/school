@@ -81,7 +81,7 @@ void menu(char** args, int i){
 	}else if (checkInRedir(args, i)==1){
 		printf("<");
 	}else if (checkOutRedir(args, i)==1){
-		//printf(">");
+		/*printf(">");*/
 		outRedir(args,i);
 	}else{
 		printf("cat");
