@@ -73,7 +73,7 @@ int main(int argc, char * argv[]){
 		}else if(pid > 0){
 			
 			printf("In parent");
-			waitpid(pid, &status ,0);
+			wait(NULL);
 			
 		}else {
 			printf("Fork Error");
