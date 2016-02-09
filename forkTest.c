@@ -78,6 +78,10 @@ int main(int argc, char * argv[]){
 			
 			printf("In parent");
 			wait(NULL);
+			 if (WIFSIGNALED(status) != 0)
+              printf("Child process ended because of signal %d.n", WTERMSIG(status));
+           else if (WIFEXITED(status) != 0)
+              printf("Child process ended normally; status = %d.n", WEXITSTATUS(status));
 			
 		}else {
 			printf("Fork Error");
