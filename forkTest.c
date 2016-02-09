@@ -40,7 +40,8 @@ int main(int argc, char * argv[]){
 		i = 0;
 		// parse the command line input
 		while(token!=NULL){
-			args[i] = token;
+			args[i]= malloc((strlen(token)+1)*sizeof(char));
+            strcpy(args[i], token);
 			token = strtok(NULL, " \n");
 			i++;
 		}
@@ -82,6 +83,11 @@ int main(int argc, char * argv[]){
 		
 		
 	}while(1);
+	
+	int j=0;
+    for (j=0;j<i;j++){
+		free(args[j]);
+	}
 	
 	return 0;
 }
