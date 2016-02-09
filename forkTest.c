@@ -8,6 +8,10 @@
 #include <ctype.h>
 
 void menu(char** args, int i);
+int checkPipe(char **args, int numArgs);
+int checkInRedir(char **args, int numArgs);
+int checkOutRedir(char **args, int numArgs);
+int checkBackground(char **args, int numArgs);
 
 int main(int argc, char * argv[]){
 	
@@ -83,4 +87,58 @@ void menu(char** args, int i){
 		printf("cat");
 		//execProcess(args);
 	}
+}
+
+/*returns 1 if there is a |*/
+int checkPipe(char **args, int numArgs){
+
+	int i = 0;
+
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], "|")==0){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*returns 1 if ther is a <*/
+int checkInRedir(char **args, int numArgs){
+
+	int i = 0;
+
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], "<")==0){
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*returns 1 if ther is a >*/
+int checkOutRedir(char **args, int numArgs){
+
+	int i = 0;
+
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], ">")==0){
+			printf("here");
+			return 1;
+		}
+	}
+	return 0;
+    
+}
+
+/*returns 1 if ther is a &*/
+int checkBackground(char **args, int numArgs){
+
+	int i = 0;
+
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], "&")==0){
+			return 1;
+		}
+	}
+	return 0;
 }
