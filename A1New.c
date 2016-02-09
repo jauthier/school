@@ -26,6 +26,7 @@ int main(int argc, char * argv[]){
 	int i;
 	int isBackground;
 	
+	
 	while(1){
 		isBackground = 0;
 		
@@ -48,37 +49,29 @@ int main(int argc, char * argv[]){
 		}
 		args[i] = NULL;
 		printf("before");
+		
+		pid_t pid = fork();
+		int type = 0;
+		int status = 0;
+		
+		if (pid >= 0){
+			if (pid == 0){
+				printf("In Child");
+				menu(args,i);
+			}else{
+				printf("In Parent\n");
+				if (isBackground==1)
+					type = WNOHANG;
+				waitpid(pid, &status, type);
+			}
+			
+		}else {
+			printf("Fork Failed\n");
+		}
+		
 		if (checkBackground(args,i) == 1){
 			args[i-1] = NULL;
 			isBackground = 1;
-		}
-		
-		int status;
-		if (isBackground == 1){
-			pid_t pid = fork();
-
-			if (pid == 0){
-				menu(args,i);
-				exit(0);
-			} else if (pid > 0){
-				printf("In parent\n");
-				waitpid(pid, &status, WNOHANG);
-		
-			}else {
-				printf("Fork Failed\n");
-			}
-		}else{
-			pid_t pid = fork();
-
-			if (pid == 0){
-				menu(args, i);
-			}else if (pid > 0){
-				printf("In parent\n");
-				waitpid(pid,&status,0);
-				printf("child done\n");
-			}else {
-				printf("Fork Failed\n");
-			}
 		}
 	}
 }
