@@ -124,7 +124,7 @@ int checkOutRedir(char **args, int numArgs){
 
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0){
-			//printf("here");
+			printf("here");
 			return 1;
 		}
 	}
