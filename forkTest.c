@@ -89,6 +89,7 @@ void menu(char** args, int i){
 		printf("cat");
 		//execProcess(args);
 	}
+	printf("end");
 }
 
 /*returns 1 if there is a |*/
