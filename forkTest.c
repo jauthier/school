@@ -12,6 +12,7 @@ int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
 int checkOutRedir(char **args, int numArgs);
 int checkBackground(char **args, int numArgs);
+void outRedir(char **args, int numArgs);
 
 int main(int argc, char * argv[]){
 	
@@ -123,7 +124,7 @@ int checkOutRedir(char **args, int numArgs){
 
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0){
-			printf("here");
+			//printf("here");
 			return 1;
 		}
 	}
@@ -142,4 +143,34 @@ int checkBackground(char **args, int numArgs){
 		}
 	}
 	return 0;
+}
+
+void outRedir(char **args, int numArgs){
+	
+	int i = 0;
+	char outFile[20];
+	char *newArgs[5];
+	FILE *fp;
+	
+	
+	for (i=0;i<numArgs;i++){
+		if (strcmp(args[i], ">")==0)
+			break;
+	}
+	printf("%s",args[i]);
+
+	strcpy(outFile, args[i+1]);
+	
+	int j = 0;
+	for (j=0;j<i;j++){
+		strcpy(newArgs[j],args[j]);
+	}
+	char path[20] = "/bin/";
+	strcat(path, newArgs[0]);
+
+	fp = freopen(outFile,"w",stdout);
+	
+	execvp(path,newArgs);
+	
+	fclose(fp);
 }
