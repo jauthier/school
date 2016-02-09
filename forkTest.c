@@ -62,7 +62,8 @@ int main(int argc, char * argv[]){
 			}
 			if (checkInRedir(args, i)==1){
 				printf("<");
-			} 
+			}
+			printf("Here now");
 			if (checkOutRedir(args, i)==1){
 				printf("%d",i);
 				outRedir(args,i);
