@@ -8,6 +8,7 @@
 #include <ctype.h>
 
 void menu(char** args, int i);
+void execProcess(char **args);
 int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
 int checkOutRedir(char **args, int numArgs);
@@ -67,7 +68,7 @@ int main(int argc, char * argv[]){
 				outRedir(args,i);
 			}else{
 				printf("cat");
-				//execProcess(args);
+				execProcess(args);
 			}
 			printf("end");
 			exit(status);
@@ -96,6 +97,16 @@ int main(int argc, char * argv[]){
 
 void menu(char** args, int i){
 	
+}
+
+void execProcess(char **args){
+
+	char *path = "/bin/";
+	char fullPath[20];
+
+	strcpy(fullPath, path);
+	strcat(fullPath, args[0]);
+	execvp(fullPath, args);
 }
 
 /*returns 1 if there is a |*/
@@ -181,12 +192,14 @@ int outRedir(char **args, int numArgs){
 	newArgs[j+1] = NULL;
 	if (newArgs[j+1]==NULL)
 		printf("last one good\n");
+	
+	execProcess(newArgs);
 
-	char path[20] = "/bin/";
-	strcat(path, newArgs[0]);
-	printf("Path: %s\n",path);
+	/* char path[20] = "/bin/"; */
+	/* strcat(path, newArgs[0]); */
+	/* printf("Path: %s\n",path); */
 	//fp = freopen(outFile,"w",stdout);
-	execvp("/bin/ls", newArgs);
+	//execvp("/bin/ls", newArgs);
 	
 	//fclose(fp);
 
