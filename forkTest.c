@@ -190,6 +190,11 @@ int outRedir(char **args, int numArgs){
 
 
 	fp = freopen(outFile,"w",stdout);
+	if (fp == NULL){
+		printf("File not found\n");
+		return 0;
+	}
+		
 	execProcess(newArgs);
 	fclose(fp);
 
