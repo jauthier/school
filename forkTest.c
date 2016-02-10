@@ -47,57 +47,47 @@ int main(int argc, char * argv[]){
 			i++;
 		}
 		args[i] = NULL;
-		//numArgs = i;
 		
 		pid_t pid = fork();
 		
 		if (pid == 0){
 			
 			printf("In Child\n");
-			sleep(1);
-			printf("In Menu\n");
-
-			if (checkPipe(args, i)==1){
-				printf("|");
-			}
-			if (checkInRedir(args, i)==1){
-				printf("<");
-			}
-			printf("Here now");
-			if (checkOutRedir(args, i)==1){
-				outRedir(args,i);
-			}else{
-				printf("cat");
-				fflush(stdout);
-				execProcess(args);
-			}
-			printf("end");
-			exit(status);
+			menu(args, i);
+			exit(0);
 			
 		}else if(pid > 0){
 			
 			printf("In parent");
-			//sleep(5);
 			waitpid(pid,&status,0);
-			//sleep(2);
+		
 		}else {
 			printf("Fork Error");
 		}
 		
-		
+		int j=0;
+		for (j=0;j<i;j++){
+			free(args[j]);
+	}
 		
 	}while(1);
-	
-	int j=0;
-    for (j=0;j<i;j++){
-		free(args[j]);
-	}
 	
 	return 0;
 }
 
 void menu(char** args, int i){
-	
+	printf("In Menu\n");
+
+	if (checkPipe(args, i)==1){
+		printf("|");
+	}else if (checkInRedir(args, i)==1){
+		printf("<");
+	}else if (checkOutRedir(args, i)==1){
+		outRedir(args,i);
+	}else{
+		execProcess(args);
+	}
+	printf("Menu end\n");
 }
 
 void execProcess(char **args){
