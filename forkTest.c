@@ -68,6 +68,7 @@ int main(int argc, char * argv[]){
 				outRedir(args,i);
 			}else{
 				printf("cat");
+				fflush(stdout);
 				execProcess(args);
 			}
 			printf("end");
@@ -76,9 +77,9 @@ int main(int argc, char * argv[]){
 		}else if(pid > 0){
 			
 			printf("In parent");
-			sleep(5);
+			//sleep(5);
 			waitpid(pid,&status,0);
-			sleep(2);
+			//sleep(2);
 		}else {
 			printf("Fork Error");
 		}
@@ -169,7 +170,7 @@ int outRedir(char **args, int numArgs){
 	int j = 0;
 	char outFile[20];
 	char *newArgs[10];
-	//FILE *fp;
+	FILE *fp;
 
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0)
@@ -189,19 +190,18 @@ int outRedir(char **args, int numArgs){
 		newArgs[j] = args[j];
 		printf("\n----%s----\n", newArgs[j]);
 	}
-	newArgs[j+1] = NULL;
-	if (newArgs[j+1]==NULL)
+	newArgs[j] = NULL;
+	if (newArgs[j]==NULL)
 		printf("last one good\n");
-	
-	execProcess(newArgs);
+	int k=0;
+	for (k=0;k<=j;k++){
+		printf("%d:  %s\n",k,newArgs[k]);
+	}
 
-	/* char path[20] = "/bin/"; */
-	/* strcat(path, newArgs[0]); */
-	/* printf("Path: %s\n",path); */
-	//fp = freopen(outFile,"w",stdout);
-	//execvp("/bin/ls", newArgs);
-	
-	//fclose(fp);
+
+	fp = freopen(outFile,"w",stdout);
+	execProcess(newArgs);
+	fclose(fp);
 
 	return 0;
 }
