@@ -22,11 +22,11 @@ int main(int argc, char * argv[]){
 	char *token;
 	int i;
 	int numArgs;
-	//int isBackground;
+	int isBackground;
 	
 	do{
 		int status = 0;
-		//isBackground = 0;
+		isBackground = 0;
 		
 		printf(">");
 		fgets(buffer, 500, stdin);
@@ -49,6 +49,12 @@ int main(int argc, char * argv[]){
 		args[i] = NULL;
 		
 		pid_t pid = fork();
+		int type = 0;
+		
+		if (checkBackground(args,i) == 1){
+			args[i-1] = NULL;
+			isBackground = 1;
+		}
 		
 		if (pid == 0){
 			
@@ -59,7 +65,9 @@ int main(int argc, char * argv[]){
 		}else if(pid > 0){
 			
 			printf("In parent");
-			waitpid(pid,&status,0);
+			if (isBackground == 1)
+				type = WNOHANG;
+			waitpid(pid,&status,type);
 		
 		}else {
 			printf("Fork Error");
