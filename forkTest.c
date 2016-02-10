@@ -9,7 +9,7 @@
 #include <signal.h>
 
 void menu(char** args, int i);
-void execProcess(char **args, int numArgs);
+int execProcess(char **args, int numArgs);
 void childHandler(int signal, siginfo_t *signalInfo, void *hold);
 int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
@@ -26,14 +26,17 @@ int main(int argc, char * argv[]){
     char *token;
     int i;
     int isBackground;
-        struct sigaction sig;
-        sig.sa_sigaction = childHandler;
+    struct sigaction sig;
+    sig.sa_sigaction = childHandler;
+    char *cwd = malloc(sizeof(char)*100);    
 
     do{
         int status = 0;
         isBackground = 0;
+        
+        getCWD(cwd);
 
-        printf("> ");
+        printf("%s> ",cwd);
         fgets(buffer, 500, stdin);
 
         //checks if the command is exit
@@ -81,6 +84,23 @@ int main(int argc, char * argv[]){
     return 0;
 }
 
+char *getCWD(){
+    char *temp = malloc(sizeof(char)*100);
+    getcwd(temp, 100);
+    
+    return temp;
+}
+
+void changeCWD(char* dir){
+    char *cwd = malloc(sizeof(char)*100);
+    strcat(cwd,"/");
+    strcat(cwd,dir);
+    int catch = chdir(cwd,100);
+    if (catch==-1)
+        printf("directory not found\n");
+    
+}
+
 /*
  * Checks for any operators in the command line input
  */
@@ -100,12 +120,19 @@ void menu(char** args, int i){
 /*
  * Executes the users command
  */
-void execProcess(char **args, int numArgs){
+int execProcess(char **args, int numArgs){
 
     int test;
     char tempStr[20];
     strcpy(tempStr, args[0]);
-
+    if (strcmp(args[0],"cd")==0){
+        if (numArgs>2){
+            printf("directory not found");
+            return 0;
+        } else {
+            changeCWD(args[1]);
+        }
+    }
     //if the process is an executable
     if (tempStr[0] == '.' && tempStr[1] == '/' ){
 
@@ -130,6 +157,7 @@ void execProcess(char **args, int numArgs){
         if (test == -1)
             printf("%s: command not found\n",args[0]);
     }
+    return 0;
 }
 
 void childHandler(int signal, siginfo_t* signalInfo, void *hold){
