@@ -16,6 +16,7 @@ int checkInRedir(char **args, int numArgs);
 int checkOutRedir(char **args, int numArgs);
 int checkBackground(char **args, int numArgs);
 int outRedir(char **args, int numArgs);
+int inRedir(char **args, int numArgs);
 int piping(char **args, int numArgs);
 
 int main(int argc, char * argv[]){
@@ -88,7 +89,7 @@ void menu(char** args, int i){
     if (checkPipe(args, i)==1){
         piping(args, i);
     }else if (checkInRedir(args, i)==1){
-        printf("<");
+        inRedir(args, i);
     }else if (checkOutRedir(args, i)==1){
         outRedir(args,i);
     }else{
@@ -108,8 +109,6 @@ void execProcess(char **args, int numArgs){
     //if the process is an executable
     if (tempStr[0] == '.' && tempStr[1] == '/' ){
 
-        int len = strlen(tempStr);
-        char execName[len];
         int i =0;
         //take the first char* out of the array
         char * newArgs[15];
@@ -274,9 +273,9 @@ int inRedir(char ** args, int numArgs){
     
      //add the read in string to the end of the char* array
         token = strtok(buffer, " \n");
-        n = j;
+        int n = j;
         while(token!=NULL){
-            strcpy(newArgs[n], token);
+            newArgs[n] = token;
             token = strtok(NULL, " \n");
             n++;
         }
@@ -286,7 +285,7 @@ int inRedir(char ** args, int numArgs){
     //send to get executed
     execProcess(newArgs, j);
     //close file
-    fclose(fp)
+    fclose(fp);
     
     return 0;
 }
@@ -295,12 +294,12 @@ int piping (char **args, int numArgs){
 
     int i = 0;
     int j = 0;
-    char * pipeOut[5];
+    char * procOutput[10];
     char * pipeIn[100];
 
     int fd[2];
     int pipeError;
-    char buffer[200];
+    char buffer[500];
     char *token;
 
     /* determines where in the array the | is */
@@ -309,11 +308,11 @@ int piping (char **args, int numArgs){
             break;
     }// i give the position of the |
 
-    /* the stuff before the | goes into pipeOut */
+    /* the stuff before the | goes into procOutput */
     for (j=0;j<i;j++){
-        pipeOut[j] = args[j];
+        procOutput[j] = args[j];
     }
-    pipeOut[j] = NULL;
+    procOutput[j] = NULL;
 
     /* the stuff after the | goes into pipeIn */
     int m = i+1; //start with the element after the |
@@ -322,7 +321,7 @@ int piping (char **args, int numArgs){
         pipeIn[k] = args[m];
         k++;
     }
-    pipeIn[k] = NULL;
+    //pipeIn[k] = NULL;
     
     /* make sure pipe worked */
     pipeError = pipe(fd);
@@ -343,25 +342,35 @@ int piping (char **args, int numArgs){
         //switch the output, anything printed to stdout goes to the pipe
         dup2(fd[1], 1);
         /*send the pipeOut array, and its size to the execProcess function */ 
-        execProcess(pipeOut,j); 
+        execProcess(procOutput,j);
 
         exit(0);
 
     }else {
+        wait(NULL);
         close(0);//close stdin
         close(fd[1]);
-        read(fd[0],buffer,200);
-        
+        read(fd[0],buffer,500);
+
+        int len = strlen(buffer);
+        int q = 0;
+        for (q=0;q<len;q++){
+            if (buffer[q]=='\n'){
+                buffer[q]='\0';
+                break;
+            }
+        }
+
         //add the read in string to the end of the char* array
         token = strtok(buffer, " \n");
-        n = k;
+
         while(token!=NULL){
-            strcpy(pipeIn[n], token);
-            token = strtok(NULL, " \n");
-            n++;
+            pipeIn[k] = token;
+            k++;
+            token = strtok(NULL, " \n\0");
         }
-        pipeIn[n] = NULL;
-        execvp(pipeIn, n);
+        pipeIn[k] = NULL;
+        execProcess(pipeIn, k);
     }
     close(fd[0]);
     close(fd[1]);
