@@ -9,6 +9,8 @@
 #include <signal.h>
 
 void menu(char** args, int i);
+char *getCWD();
+char *changeCWD(char* dir);
 int execProcess(char **args, int numArgs);
 void childHandler(int signal, siginfo_t *signalInfo, void *hold);
 int checkPipe(char **args, int numArgs);
@@ -19,6 +21,8 @@ int outRedir(char **args, int numArgs);
 int inRedir(char **args, int numArgs);
 int piping(char **args, int numArgs);
 
+
+
 int main(int argc, char * argv[]){
 
     char buffer[500];
@@ -28,13 +32,13 @@ int main(int argc, char * argv[]){
     int isBackground;
     struct sigaction sig;
     sig.sa_sigaction = childHandler;
-    char *cwd = malloc(sizeof(char)*100);    
+    char *cwd = malloc(sizeof(char)*100);
 
     do{
         int status = 0;
         isBackground = 0;
         
-        getCWD(cwd);
+        cwd = getCWD();
 
         printf("%s> ",cwd);
         fgets(buffer, 500, stdin);
@@ -55,6 +59,17 @@ int main(int argc, char * argv[]){
             i++;
         }
         args[i] = NULL;
+
+        if (strcmp(args[0],"cd")==0){
+            if (i>2){
+                printf("directory not found\n");
+                continue;
+            } else {
+                cwd = changeCWD(args[1]);
+                continue;
+            }
+        }
+
 
         pid_t pid = fork(); //create a child process
         int type = 0;
@@ -86,19 +101,21 @@ int main(int argc, char * argv[]){
 
 char *getCWD(){
     char *temp = malloc(sizeof(char)*100);
-    getcwd(temp, 100);
+    getcwd(temp,100);
     
     return temp;
 }
 
-void changeCWD(char* dir){
+char* changeCWD(char* dir){
     char *cwd = malloc(sizeof(char)*100);
+	getcwd(cwd,100);
     strcat(cwd,"/");
     strcat(cwd,dir);
-    int catch = chdir(cwd,100);
+	printf("%s\n",cwd);
+    int catch = chdir(cwd);
     if (catch==-1)
         printf("directory not found\n");
-    
+    return cwd;
 }
 
 /*
@@ -125,14 +142,7 @@ int execProcess(char **args, int numArgs){
     int test;
     char tempStr[20];
     strcpy(tempStr, args[0]);
-    if (strcmp(args[0],"cd")==0){
-        if (numArgs>2){
-            printf("directory not found");
-            return 0;
-        } else {
-            changeCWD(args[1]);
-        }
-    }
+
     //if the process is an executable
     if (tempStr[0] == '.' && tempStr[1] == '/' ){
 
