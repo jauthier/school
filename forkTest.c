@@ -12,7 +12,7 @@ int checkPipe(char **args, int numArgs);
 int checkInRedir(char **args, int numArgs);
 int checkOutRedir(char **args, int numArgs);
 int checkBackground(char **args, int numArgs);
-void outRedir(char **args, int numArgs);
+int outRedir(char **args, int numArgs);
 
 int main(int argc, char * argv[]){
 	
@@ -21,11 +21,11 @@ int main(int argc, char * argv[]){
 	char *token;
 	int i;
 	int numArgs;
-	int isBackground;
+	//int isBackground;
 	
 	do{
 		int status = 0;
-		isBackground = 0;
+		//isBackground = 0;
 		
 		printf(">");
 		fgets(buffer, 500, stdin);
@@ -46,7 +46,7 @@ int main(int argc, char * argv[]){
 			i++;
 		}
 		args[i] = NULL;
-		numArgs = i;
+		//numArgs = i;
 		
 		pid_t pid = fork();
 		
@@ -55,7 +55,6 @@ int main(int argc, char * argv[]){
 			printf("In Child\n");
 			sleep(1);
 			printf("In Menu\n");
-			printf("wtf\n");
 
 			if (checkPipe(args, i)==1){
 				printf("|");
@@ -65,7 +64,6 @@ int main(int argc, char * argv[]){
 			}
 			printf("Here now");
 			if (checkOutRedir(args, i)==1){
-				printf("%d",i);
 				outRedir(args,i);
 			}else{
 				printf("cat");
@@ -77,12 +75,9 @@ int main(int argc, char * argv[]){
 		}else if(pid > 0){
 			
 			printf("In parent");
-			wait(NULL);
-			 if (WIFSIGNALED(status) != 0)
-              printf("Child process ended because of signal %d.n", WTERMSIG(status));
-           else if (WIFEXITED(status) != 0)
-              printf("Child process ended normally; status = %d.n", WEXITSTATUS(status));
-			
+			sleep(5);
+			waitpid(pid,&status,0);
+			sleep(2);
 		}else {
 			printf("Fork Error");
 		}
@@ -157,32 +152,43 @@ int checkBackground(char **args, int numArgs){
 	return 0;
 }
 
-void outRedir(char **args, int numArgs){
-	
+int outRedir(char **args, int numArgs){
+
 	int i = 0;
+	int j = 0;
 	char outFile[20];
-	char *newArgs[5];
-	FILE *fp;
-	printf("made it here");
-	
+	char *newArgs[10];
+	//FILE *fp;
+
 	for (i=0;i<numArgs;i++){
 		if (strcmp(args[i], ">")==0)
 			break;
 	}
-	printf("%s",args[i]);
 
-	strcpy(outFile, args[i+1]);
-	
-	int j = 0;
-	for (j=0;j<i;j++){
-		strcpy(newArgs[j],args[j]);
+	if (args[i+1] != NULL){
+		strcpy(outFile, args[i+1]);
+	} else {
+		printf("No file.\n");
+		return 0;
 	}
+
+	printf("i: %d, i-1 arg: %s\n",i,args[i-1]);
+
+	for (j=0;j<i;j++){
+		newArgs[j] = args[j];
+		printf("\n----%s----\n", newArgs[j]);
+	}
+	newArgs[j+1] = NULL;
+	if (newArgs[j+1]==NULL)
+		printf("last one good\n");
+
 	char path[20] = "/bin/";
 	strcat(path, newArgs[0]);
+	printf("Path: %s\n",path);
+	//fp = freopen(outFile,"w",stdout);
+	execvp("/bin/ls", newArgs);
+	
+	//fclose(fp);
 
-	fp = freopen(outFile,"w",stdout);
-	
-	execvp(path,newArgs);
-	
-	fclose(fp);
+	return 0;
 }
