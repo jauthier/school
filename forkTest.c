@@ -10,6 +10,7 @@
 
 void menu(char** args, int i);
 char *getCWD();
+char *rootDir();
 char *changeCWD(char* dir);
 int execProcess(char **args, int numArgs);
 void childHandler(int signal, siginfo_t *signalInfo, void *hold);
@@ -61,8 +62,8 @@ int main(int argc, char * argv[]){
         args[i] = NULL;
 
         if (strcmp(args[0],"cd")==0){
-            if (i>2){
-                printf("directory not found\n");
+            if (i==1){
+                cwd = rootDir();
                 continue;
             } else {
                 cwd = changeCWD(args[1]);
@@ -106,12 +107,31 @@ char *getCWD(){
     return temp;
 }
 
+char *rootDir(){
+    char *cwd = malloc(sizeof(char)*100);
+    cwd = getenv("PWD");
+    return cwd;
+}
+    
 char* changeCWD(char* dir){
     char *cwd = malloc(sizeof(char)*100);
 	getcwd(cwd,100);
-    strcat(cwd,"/");
-    strcat(cwd,dir);
-	printf("%s\n",cwd);
+    int len = strlen(cwd)-1;
+    if (strcmp(dri, "..")==0){
+        char letter = cwd[len]; //last char of string
+        while (letter != '/'&&len != 0){
+            cwd[len] = '\0';
+            len--;
+            letter = cwd[len];
+        }
+        cwd[len] = '\0';
+        
+    } else {
+        strcat(cwd,"/");
+        strcat(cwd,dir);
+        printf("%s\n",cwd);
+    }
+    
     int catch = chdir(cwd);
     if (catch==-1)
         printf("directory not found\n");
