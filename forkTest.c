@@ -9,8 +9,10 @@
 #include <signal.h>
 
 void menu(char** args, int i);
+int writeHistory(char *toWrite);
+void readHistory();
+void clearHistory();
 char *getCWD();
-char *rootDir();
 char *changeCWD(char* dir);
 int execProcess(char **args, int numArgs);
 void childHandler(int signal, siginfo_t *signalInfo, void *hold);
@@ -22,7 +24,7 @@ int outRedir(char **args, int numArgs);
 int inRedir(char **args, int numArgs);
 int piping(char **args, int numArgs);
 
-
+char rootDir[100];
 
 int main(int argc, char * argv[]){
 
@@ -34,6 +36,7 @@ int main(int argc, char * argv[]){
     struct sigaction sig;
     sig.sa_sigaction = childHandler;
     char *cwd = malloc(sizeof(char)*100);
+	getcwd(rootDir, 100);
 
     do{
         int status = 0;
@@ -43,6 +46,11 @@ int main(int argc, char * argv[]){
 
         printf("%s> ",cwd);
         fgets(buffer, 500, stdin);
+
+		if (strcmp(buffer, "\n")==0)
+			continue;
+
+		writeHistory(buffer);
 
         //checks if the command is exit
         if (strcmp(buffer, "exit\n")==0){
@@ -63,14 +71,20 @@ int main(int argc, char * argv[]){
 
         if (strcmp(args[0],"cd")==0){
             if (i==1){
-                cwd = rootDir();
-                continue;
+                strcpy(cwd, rootDir);
+				chdir(cwd);
             } else {
                 cwd = changeCWD(args[1]);
-                continue;
             }
+			continue;
         }
-
+		if (strcmp(args[0],"history")==0){
+			if (args[1] == NULL)
+				readHistory();
+			else if (strcmp(args[1],"-c")==0)
+				clearHistory();
+			continue;
+		}
 
         pid_t pid = fork(); //create a child process
         int type = 0;
@@ -100,6 +114,50 @@ int main(int argc, char * argv[]){
     return 0;
 }
 
+int writeHistory(char *toWrite){
+
+	char *fileName = malloc(sizeof(char)*100);
+	strcpy(fileName, rootDir);
+	strcat(fileName,"/");
+	strcat(fileName,".CIS3110_history");
+	FILE* fp;
+	fp = fopen(fileName,"a");
+	if (fp == NULL){
+		printf("%S: No such file or direcotry\n");
+		return 0;
+	}
+	fprintf(fp,"%s",toWrite);
+
+	fclose(fp);
+	free(fileName);
+}
+
+void readHistory(){
+
+	char buffer[100];
+	char *fileName = malloc(sizeof(char)*100);
+	strcpy(fileName, rootDir);
+	strcat(fileName,"/");
+	strcat(fileName,".CIS3110_history");
+	FILE* fp;
+	fp = fopen(fileName,"r");
+	if (fp == NULL)
+		printf("%S: No such file or direcotry\n");
+
+	int count = 1;
+	while (fgets(buffer,100,fp)!= NULL){
+	    printf(" %d  %s\n",count,buffer);
+	    count++;
+	}
+	fclose(fp);
+}
+
+void clearHistory(){
+
+
+}
+
+
 char *getCWD(){
     char *temp = malloc(sizeof(char)*100);
     getcwd(temp,100);
@@ -107,17 +165,11 @@ char *getCWD(){
     return temp;
 }
 
-char *rootDir(){
-    char *cwd = malloc(sizeof(char)*100);
-    cwd = getenv("PWD");
-    return cwd;
-}
-    
 char* changeCWD(char* dir){
     char *cwd = malloc(sizeof(char)*100);
 	getcwd(cwd,100);
     int len = strlen(cwd)-1;
-    if (strcmp(dri, "..")==0){
+    if (strcmp(dir, "..")==0){
         char letter = cwd[len]; //last char of string
         while (letter != '/'&&len != 0){
             cwd[len] = '\0';
@@ -125,16 +177,16 @@ char* changeCWD(char* dir){
             letter = cwd[len];
         }
         cwd[len] = '\0';
-        
+    	chdir(cwd);
     } else {
         strcat(cwd,"/");
         strcat(cwd,dir);
-        printf("%s\n",cwd);
-    }
     
-    int catch = chdir(cwd);
-    if (catch==-1)
-        printf("directory not found\n");
+    	int catch = chdir(cwd);
+	    if (catch==-1)
+        	printf("%s: No such file or directory\n",dir);
+
+    }
     return cwd;
 }
 
@@ -163,6 +215,13 @@ int execProcess(char **args, int numArgs){
     char tempStr[20];
     strcpy(tempStr, args[0]);
 
+	if (strcmp(args[0],"sort")==0){
+		int catch = execvp(args[0],args);
+		if (catch ==-1)
+			printf("%s: No such file or directory\n",args[1]);
+		return 0;;
+	}else
+
     //if the process is an executable
     if (tempStr[0] == '.' && tempStr[1] == '/' ){
 
@@ -175,15 +234,30 @@ int execProcess(char **args, int numArgs){
         }
         newArgs[i] = NULL;
 
-        execvp(tempStr, newArgs);
+        test = execvp(tempStr, newArgs);
+		if (test ==-1)
+			printf("%s: No such file or directory\n",tempStr);
 
     }else{
         char *path = "/bin/";
         char fullPath[20];
 
+		if (args[1] != NULL){
+			if (strcmp(args[1],"$HISTFILE")==0){
+				char *pathStr = malloc(sizeof(char)*100);
+				strcpy(pathStr,rootDir);
+				strcat(pathStr,"/");
+				strcat(pathStr,".CIS3110_history");
+				args[1]=pathStr;
+
+			}else if (strcmp(args[1],"$HOME")==0){
+				strcpy(args[1],rootDir);
+				printf("hist");
+			}
+		}
         strcpy(fullPath, path);
         strcat(fullPath, args[0]);
-        test = execvp(fullPath, args);
+		test = execvp(fullPath, args);
         if (test == -1)
             printf("%s: command not found\n",args[0]);
     }
@@ -193,7 +267,6 @@ int execProcess(char **args, int numArgs){
 void childHandler(int signal, siginfo_t* signalInfo, void *hold){
 
     int status = 0;
-    printf("process complete");
     if (signal == SIGCHLD)
         waitpid(signalInfo->si_pid,&status,0);
 }
@@ -265,7 +338,7 @@ int outRedir(char **args, int numArgs){
     if (args[i+1] != NULL){
         strcpy(outFile, args[i+1]);
     } else {
-        printf("No file\n");
+        printf(": syntax error\n");
         return 0;
     }
     //make a new array with the commands that willbe sent to execProcess
@@ -277,7 +350,7 @@ int outRedir(char **args, int numArgs){
     //open file stream
     fp = freopen(outFile,"w",stdout);
     if (fp == NULL){
-        printf("File not found\n");
+        printf("%s: No such file or directory\n",outFile);
         return 0;
     }
     //send to get executed
@@ -310,7 +383,7 @@ int inRedir(char ** args, int numArgs){
     if (args[i+1] != NULL){
         strcpy(inFile, args[i+1]);
     } else {
-        printf("No file\n");
+        printf(": syntax error\n");
         return 0;
     }
     
@@ -323,7 +396,7 @@ int inRedir(char ** args, int numArgs){
     //open file stream
     fp = fopen(inFile,"r");
     if (fp == NULL){
-        printf("File not found\n");
+        printf("%s: No such file or directory\n",inFile);
         return 0;
     }
     
@@ -384,16 +457,17 @@ int piping (char **args, int numArgs){
     /* make sure pipe worked */
     pipeError = pipe(fd);
     if (pipeError ==-1){
-        printf("Pipe Error\n");
+        printf(": Pipe Error\n");
         return 0;
     }
 
     // make a new process to execute the first command	
     pid_t childpid = fork(); 
 
-    if (childpid < 0)
-        printf("Failed\n");
-    else if (childpid == 0){
+    if (childpid < 0){
+        printf(": Fork Failed\n");
+		return 0;
+	}else if (childpid == 0){
 
         close(1);//close stdout
         close(fd[0]);
