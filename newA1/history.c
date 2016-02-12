@@ -10,13 +10,14 @@ int writeHistory(char *toWrite){
     FILE* fp;
     fp = fopen(fileName,"a");
     if (fp == NULL){
-        printf("%S: No such file or direcotry\n");
+        printf("%s: No such file or direcotry\n",fileName);
         return 0;
     }
     fprintf(fp,"%s",toWrite);
 
     fclose(fp);
     free(fileName);
+	return 0;
 }
 
 void readHistory(){
@@ -29,7 +30,7 @@ void readHistory(){
     FILE* fp;
     fp = fopen(fileName,"r");
     if (fp == NULL)
-        printf("%S: No such file or direcotry\n");
+        printf("%s: No such file or direcotry\n",fileName);
 
     int count = 1;
     while (fgets(buffer,100,fp)!= NULL){
@@ -49,9 +50,9 @@ void clearHistory(){
     FILE* fp;
     fp = fopen(fileName,"w");
     if (fp == NULL)
-        printf("%S: No such file or direcotry\n");
+        printf("%s: No such file or direcotry\n",fileName);
 
-    fprintf(fp,"");
+    fprintf(fp," ");
     
     fclose(fp);
     free(fileName);
@@ -66,6 +67,7 @@ int readnEntries(char *arg){
         return 0;
     } else{
         
+		char buffer[100];
         int numEntries = strtol(arg, &endPtr,10);
         char *fileName = malloc(sizeof(char)*100);
         strcpy(fileName, rootDir);
@@ -74,7 +76,7 @@ int readnEntries(char *arg){
         FILE* fp;
         fp = fopen(fileName,"w");
         if (fp == NULL)
-            printf("%S: No such file or direcotry\n");
+            printf("%s: No such file or direcotry\n",fileName);
         
         int count = 1;
         while ((fgets(buffer,100,fp)!= NULL) && (count != numEntries)){
