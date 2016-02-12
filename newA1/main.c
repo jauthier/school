@@ -59,6 +59,8 @@ int main(int argc, char * argv[]){
 				readHistory();
 			else if (strcmp(args[1],"-c")==0)
 				clearHistory();
+			else
+				readnEntries(args[1]);
 			continue;
 		}
 

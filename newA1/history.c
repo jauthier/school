@@ -74,12 +74,12 @@ int readnEntries(char *arg){
         strcat(fileName,"/");
         strcat(fileName,".CIS3110_history");
         FILE* fp;
-        fp = fopen(fileName,"w");
+        fp = fopen(fileName,"r");
         if (fp == NULL)
             printf("%s: No such file or direcotry\n",fileName);
         
         int count = 1;
-        while ((fgets(buffer,100,fp)!= NULL) && (count != numEntries)){
+        while ((fgets(buffer,100,fp)!= NULL) && (count <= numEntries)){
             printf(" %d  %s\n",count,buffer);
             count++;
         }
