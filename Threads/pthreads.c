@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 
-char *getLine(FILE *fp, char *line);
+
 
 typedef struct thread {
     int tid;
@@ -20,6 +20,10 @@ typedef struct process {
     struct process *next;
 } process;
 
+char *getLine(FILE *fp, char *line);
+void createNewProcess(FILE *fp, int id, int threadNum);
+thread createNewThread(int threadID, int cpuTime, int ioTime);
+thread *addThread(thread threadToAdd, thread *threadList);
 
 
 int main (int argc, char *argv){
@@ -126,10 +130,10 @@ void createNewProcess(FILE *fp, int id, int threadNum){
 
 thread createNewThread(int threadID, int cpuTime, int ioTime){
     thread newThread = malloc(sizeof(thread));
-    newThread->tid = threadID;
-    newThread->cpuTime = cpuTime;
-    newThread->ioTime = ioTime;
-    newThread->next = NULL;
+    newThread.tid = threadID;
+    newThread.cpuTime = cpuTime;
+    newThread.ioTime = ioTime;
+    newThread.next = NULL;
     
     return newThread;
 }
@@ -143,9 +147,9 @@ thread *addThread(thread threadToAdd, thread *threadList){
         int check = 0;
         while (check==0){
             thread *currentThread  = threadList;
-            if (currentThread->next == NULL){
+            if (currentThread.next == NULL){
                 check = 1;
-                currentThread->next = threadToAdd;
+                currentThread.next = threadToAdd;
                 
             } else 
                 currentThread = currentThread.next;    
