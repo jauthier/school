@@ -97,7 +97,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     
     char buffer[100];
     struct process newProcess;
-    newProcess = (process)malloc(sizeof(struct process));
+    newProcess = malloc(sizeof(struct process));
     newProcess.pid = id;
     newProcess.numThreads = threadNum;
     
