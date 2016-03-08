@@ -114,7 +114,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     int cpuTime;
     int ioTime;
     
-    for (i=0;i>numThreads;i++){
+    for (i=0;i>threadNum;i++){
         token = strtok(tempLine, " ");
         threadID = atol(token);
         token = strtok(NULL, " ");
@@ -130,7 +130,8 @@ void createNewProcess(FILE *fp, int id, int threadNum){
 }
 
 thread createNewThread(int threadID, int cpuTime, int ioTime){
-    thread newThread = malloc(sizeof(thread));
+    thread newThread;
+    newThread = malloc(sizeof(thread));
     newThread.tid = threadID;
     newThread.cpuTime = cpuTime;
     newThread.ioTime = ioTime;
@@ -141,7 +142,7 @@ thread createNewThread(int threadID, int cpuTime, int ioTime){
 
 thread *addThread(thread threadToAdd, thread *threadList){
     if (threadList == NULL)
-        threadList = threadToAdd;
+        threadList = &threadToAdd;
     else {
         //find the last item in the list
         
