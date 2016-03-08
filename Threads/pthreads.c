@@ -23,7 +23,7 @@ typedef struct process {
 char *getLine(FILE *fp, char *line);
 void createNewProcess(FILE *fp, int id, int threadNum);
 thread *createNewThread(int threadID, int cpuTime, int ioTime);
-thread *addThread(thread threadToAdd, thread *threadList);
+thread *addThread(thread *threadToAdd, thread *threadList);
 
 
 int main (int argc, char *argv){
