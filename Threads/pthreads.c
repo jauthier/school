@@ -22,7 +22,7 @@ typedef struct process {
 
 char *getLine(FILE *fp, char *line);
 void createNewProcess(FILE *fp, int id, int threadNum);
-thread createNewThread(int threadID, int cpuTime, int ioTime);
+thread *createNewThread(int threadID, int cpuTime, int ioTime);
 thread *addThread(thread threadToAdd, thread *threadList);
 
 
@@ -104,7 +104,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     //need to make the thread list
     //use the number of threads to get the next n lines and add them to the list
     struct thread *threadList;
-    struct thread threadToAdd;
+    struct thread *threadToAdd;
     
     //get the info if the first thread
     char *tempLine = getLine(fp, buffer);
@@ -140,7 +140,7 @@ thread *createNewThread(int threadID, int cpuTime, int ioTime){
     return newThread;
 }
 
-thread *addThread(thread threadToAdd, thread *threadList){
+thread *addThread(thread *threadToAdd, thread *threadList){
     if (threadList == NULL)
         threadList = threadToAdd;
     else {
