@@ -96,8 +96,8 @@ char* getLine(FILE* fp, char *line){
 void createNewProcess(FILE *fp, int id, int threadNum){
     
     char buffer[100];
-    process newProcess;
-    newProcess = (process)malloc(sizeof(process));
+    struct process newProcess;
+    newProcess = (process)malloc(sizeof(struct process));
     newProcess.pid = id;
     newProcess.numThreads = threadNum;
     
