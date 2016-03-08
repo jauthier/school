@@ -99,7 +99,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     struct process *newProcess;
     newProcess = malloc(sizeof(struct process));
     newProcess->pid = id;
-    newProcess.numThreads = threadNum;
+    newProcess->numThreads = threadNum;
     
     //need to make the thread list
     //use the number of threads to get the next n lines and add them to the list
@@ -130,12 +130,12 @@ void createNewProcess(FILE *fp, int id, int threadNum){
 }
 
 thread createNewThread(int threadID, int cpuTime, int ioTime){
-    thread newThread;
+    thread *newThread;
     newThread = malloc(sizeof(thread));
-    newThread.tid = threadID;
-    newThread.cpuTime = cpuTime;
-    newThread.ioTime = ioTime;
-    newThread.next = NULL;
+    newThread->tid = threadID;
+    newThread->cpuTime = cpuTime;
+    newThread->ioTime = ioTime;
+    newThread->next = NULL;
     
     return newThread;
 }
@@ -149,12 +149,12 @@ thread *addThread(thread threadToAdd, thread *threadList){
         int check = 0;
         while (check==0){
             thread *currentThread  = threadList;
-            if (currentThread.next == NULL){
+            if (currentThread->next == NULL){
                 check = 1;
-                currentThread.next = threadToAdd;
+                currentThread->next = threadToAdd;
                 
             } else 
-                currentThread = currentThread.next;    
+                currentThread = currentThread->next;    
         }
     }
     return threadList;
