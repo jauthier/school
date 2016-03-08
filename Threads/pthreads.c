@@ -97,7 +97,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     
     char buffer[100];
     process newProcess;
-    newProcess = malloc(sizeof(process));
+    newProcess = (process)malloc(sizeof(process));
     newProcess.pid = id;
     newProcess.numThreads = threadNum;
     
