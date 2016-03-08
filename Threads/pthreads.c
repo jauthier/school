@@ -4,7 +4,7 @@
 #include <pthread.h>
 
 
-
+char *getLine(FILE *fp, char *line);
 
 struct thread {
     int tid;
@@ -20,6 +20,7 @@ struct Process {
 } process;
 
 
+
 int main (int argc, char *argv){
     
     int numProcesses;
@@ -32,19 +33,19 @@ int main (int argc, char *argv){
     //threads in same process, num units to switch threads in different
     // processes>
     
-    char fileName[100];
+    char fileName[100] = "inputFile.txt";
     
     FILE* fp = fopen(fileName,"r");
     
     //get the first line of the file
-    char *firstline = getLine(fp);
+    char *firstline = getLine(fp, buffer);
     //parse the first line
     char *token = strtok(firstline," ");
-    numProcesses = strtol(token);
+    numProcesses = atol(token);
     token = strtok(NULL, " ");
-    threadSwitchTime = strtol(token);
+    threadSwitchTime = atol(token);
     token = strtok(NULL, " ");
-    processSwitchTime = strtol(token);
+    processSwitchTime = atol(token);
     
     printf("there are %d processes, %d, %d.\n", numProcesses, threadSwitchTime, processSwitchTime);
     
@@ -52,7 +53,7 @@ int main (int argc, char *argv){
     return 0;
 }
 
-char* getLine(FILE* fp){
+char* getLine(FILE* fp, char *line){
     
     if (fp == NULL) {
         printf("Unable to open file.\n");
@@ -73,7 +74,7 @@ char* getLine(FILE* fp){
     
     lineBuffer[count] = '\0'; 
 
-    char line[count + 1];
+    
     stpcpy(line, lineBuffer);
     free(lineBuffer);
    
