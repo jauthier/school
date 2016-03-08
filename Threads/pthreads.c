@@ -129,7 +129,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     
 }
 
-thread createNewThread(int threadID, int cpuTime, int ioTime){
+thread *createNewThread(int threadID, int cpuTime, int ioTime){
     thread *newThread;
     newThread = malloc(sizeof(thread));
     newThread->tid = threadID;
@@ -142,7 +142,7 @@ thread createNewThread(int threadID, int cpuTime, int ioTime){
 
 thread *addThread(thread threadToAdd, thread *threadList){
     if (threadList == NULL)
-        threadList = &threadToAdd;
+        threadList = threadToAdd;
     else {
         //find the last item in the list
         
