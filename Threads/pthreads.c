@@ -98,7 +98,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     char buffer[100];
     struct process *newProcess;
     newProcess = malloc(sizeof(struct process));
-    newProcess.pid = id;
+    newProcess->pid = id;
     newProcess.numThreads = threadNum;
     
     //need to make the thread list
