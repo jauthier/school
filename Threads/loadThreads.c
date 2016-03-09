@@ -85,6 +85,7 @@ thread *loadThrerads(FILE* fp){
         int threadID;
         int arriveTime;
         int numBursts;
+        struct thread *threadToAdd;
         
         for (j=0;j<threadNum;j++){
             char threadBuffer[50];
@@ -133,7 +134,7 @@ char* getLine(FILE* fp, char *line){
     return line;
 }
 
-thread *createNewThread(FILE *fp, int processID int threadID, int arriveTime, int numBursts){
+thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, int numBursts){
     int burstNum;
     int cpuTime;
     int ioTime;
