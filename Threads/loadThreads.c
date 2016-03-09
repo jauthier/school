@@ -20,6 +20,7 @@ typedef struct thread {
     struct thread *next;
 } thread;
 
+thread *loadThrerads(FILE* fp);
 char *getLine(FILE *fp, char *line);
 thread *createNewThread(FILE *fp, int processID, int threadID, int cpuTime, int ioTime);
 thread *addThread(thread *threadToAdd, thread *threadList);
@@ -28,6 +29,7 @@ burst *addBurst(burst *burstToAdd, burst *burstList);
 
 int main (int argc, char *argv){
     
+    char fileName[100] = "inputFile.txt";
     FILE* fp = fopen(fileName,"r");
     thread *threadList;
     threadList = loadThreads(fp);
@@ -45,7 +47,7 @@ thread *loadThrerads(FILE* fp){
     int processSwitchTime;
     char buffer [50];
     thread *threadList;
-    char fileName[100] = "inputFile.txt";
+    
     int i=0;
     
     //for parsing
@@ -72,14 +74,19 @@ thread *loadThrerads(FILE* fp){
     
     //make a list of threads
     for (i=0;i<numProcesses;i++){
-		process *processToAdd;
+		
         tempLine = getLine(fp, buffer);
         token = strtok(tempLine, " ");
         int processNum = atol(token);
         token = strtok(NULL, " ");
         int threadNum = atol(token);
         
-        for (i=0;i<threadNum;i++){
+        int j = 0;
+        int threadID;
+        int arriveTime;
+        int numBursts;
+        
+        for (j=0;j<threadNum;j++){
             char threadBuffer[50];
             tempLine = getLine(fp, threadBuffer);
             printf("tempLine: %s\n",tempLine);
