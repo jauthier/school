@@ -46,7 +46,7 @@ thread *loadThreads(FILE* fp){
     int threadSwitchTime;
     int processSwitchTime;
     char buffer [50];
-    thread *threadList;
+    thread *threadList = NULL;
     
     int i=0;
     
@@ -192,7 +192,8 @@ thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, i
 thread *addThread(thread *threadToAdd, thread *threadList){
     printf("in addThread: %p\n",threadList);
     if (threadList == NULL){
-    threadList = threadToAdd;
+        printf("First Thread\n");
+        threadList = threadToAdd;
     }else {
         //find the last item in the list
         printf("here1\n");
