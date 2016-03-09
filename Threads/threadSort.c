@@ -46,16 +46,23 @@ int main (int argc, char *argv){
     threadList = sortList(threadList, numThreads);
     
     printList(threadList);
+
+
+
+
+
+
     
     return 0;
 }
 
 int getNumThreads(thread* threadList){
-    int num;
-    while (threadList->next != NULL){
+    int num = 0;
+printf("here\n");
+    while (threadList != NULL){
         num++;
+		threadList = threadList->next;
     }
-    num ++;
     return num;
 }
 
@@ -71,7 +78,7 @@ thread *sortList(thread *threadList, int numThreads){
     threadList = threadList->next; //set threadList to its second thread
     sortedList->next = NULL; //it is the only thread in the list
     int count = 1; //starts at 1 because there is on thread in the sorted list
-    
+    printf("in sort\n");
     while((numThreads-1) != 0){ //while there is another thread to get from the original list
         thread *previous = NULL;
         int i = 0;
