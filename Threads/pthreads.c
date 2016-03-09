@@ -27,6 +27,7 @@ typedef struct process {
 
 char *getLine(FILE *fp, char *line);
 process *createNewProcess(FILE *fp, int id, int threadNum);
+process *addProcess(process *processToAdd, process *processList);
 thread *createNewThread(FILE *fp, int threadID, int cpuTime, int ioTime);
 thread *addThread(thread *threadToAdd, thread *threadList);
 burst *createBurst(int burstNum, int cpuTime, int ioTime);
@@ -161,7 +162,7 @@ process *addProcess(process *processToAdd, process *processList){
         
         int check = 0;
         while (check==0){
-            thread *currentProcess = processList;
+            process *currentProcess = processList;
             if (currentProcess->next == NULL){
                 check = 1;
                 currentProcess->next = processToAdd;
