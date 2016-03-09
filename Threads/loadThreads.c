@@ -228,7 +228,7 @@ burst *addBurst(burst *burstToAdd, burst *burstList){
 }
 
 int addCPUTime(burst *burstList){
-    int sum;
+    int sum = 0;
     burst *currentBurst = burstList;
     
     while (currentBurst->next != NULL) {
@@ -242,7 +242,7 @@ int addCPUTime(burst *burstList){
 }
 
 int addIOTime(burst *burstList){
-    int sum;
+    int sum = 0;
     burst *currentBurst = burstList;
     
     while (currentBurst->next != NULL) {
@@ -250,9 +250,7 @@ int addIOTime(burst *burstList){
         printf("io burst: %d\n",currentBurst->ioTime);
         currentBurst = currentBurst->next;
     }
-    //get the last one
-    printf("%d\n",sum);
-    sum = sum + currentBurst->ioTime;
+    
     printf("%d\n",sum);
     return sum;
     
