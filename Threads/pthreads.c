@@ -34,15 +34,16 @@ burst *createBurst(int burstNum, int cpuTime, int ioTime);
 burst *addBurst(burst *burstToAdd, burst *burstList);
 
 int main (int argc, char *argv){
-    
+
+    clock_t start, end, total;
+	start = clock();
     int numProcesses;
     int threadSwitchTime;
     int processSwitchTime;
     char buffer [500];
     process *processList;
-    process *processToAdd;
     char fileName[100] = "inputFile.txt";
-    int i;
+    int i=0;
     
     //for parsing
     //first line <how many processes, num of units to switch
@@ -69,7 +70,7 @@ int main (int argc, char *argv){
     
     //make a list of processes
     for (i=0;i<numProcesses;i++){
-       
+		process *processToAdd;
         tempLine = getLine(fp, buffer);
         token = strtok(tempLine, " ");
         int processNum = atol(token);
@@ -80,8 +81,9 @@ int main (int argc, char *argv){
         processList = addProcess(processToAdd, processList);
        
     }
-    
-    
+    end = clock();
+	total = (float)(end - start)*1000;
+    printf("CPU time: %f\n",total);
     return 0;
 }
 
@@ -112,14 +114,13 @@ char* getLine(FILE* fp, char *line){
 
 process *createNewProcess(FILE *fp, int id, int threadNum){
     
-    char buffer[100];
     char *tempLine;
     int i = 0;
     char *token;
     int threadID;
     int arriveTime;
     int numBursts;
-    
+
     //allocate memory for the process struct
     struct process *newProcess;
     newProcess = malloc(sizeof(struct process));
@@ -133,21 +134,25 @@ process *createNewProcess(FILE *fp, int id, int threadNum){
     struct thread *threadToAdd;
     
     //get the line of the first thread
-    tempLine = getLine(fp, buffer);
     //parse the line and assigin it to the appropriate variables
     for (i=0;i<threadNum;i++){
+        char buffer[100];
+        tempLine = getLine(fp, buffer);
+        printf("tempLine: %s\n",tempLine);
         token = strtok(tempLine, " ");
         threadID = atol(token);
         token = strtok(NULL, " ");
         arriveTime = atol(token);
         token = strtok(NULL, " ");
         numBursts = atol(token);
-        
+        threadList = NULL;
         //creates a new thread and give the address of the new thread to threadToAdd
         threadToAdd = createNewThread(fp, threadID, arriveTime, numBursts);
+		printf("one thread made\n");
         //ands the new thread to the list of threads
         threadList = addThread(threadToAdd, threadList);
-        tempLine = getLine(fp,buffer);
+        printf("thread added\n");
+        printf("the current line: %s\n",tempLine);
     }
     newProcess->firstThread = threadList;
     newProcess->next = NULL;
@@ -181,7 +186,7 @@ thread *createNewThread(FILE *fp, int threadID, int arriveTime, int numBursts){
     int cpuTime;
     int ioTime;
     burst *burstToAdd;
-    burst *burstList;
+    burst *burstList = NULL;
     char buffer[50];
     char *tempLine;
     char *token;
@@ -193,47 +198,63 @@ thread *createNewThread(FILE *fp, int threadID, int arriveTime, int numBursts){
     newThread->arriveTime = arriveTime;
     newThread->numOfBursts = numBursts;
     
-    
+	printf("number of bursts: %d\n",numBursts);
+
     //get the line of the first burst
-    tempLine = getLine(fp, buffer);
     //parse the line and assigin it to the appropriate variables
     for (i=0;i<numBursts;i++){
+    tempLine = getLine(fp, buffer);
         token = strtok(tempLine, " ");
         burstNum = atol(token);
         token = strtok(NULL, " ");
-        cpuTime = atol(token);
-        token = strtok(NULL, " ");
-        ioTime = atol(token);
-        
+		if (token == NULL){
+			cpuTime = 0;
+			ioTime = 0;
+		}else {
+        	cpuTime = atol(token);
+        	token = strtok(NULL, " ");
+			if (token == NULL)
+				ioTime = 0;
+			else
+				ioTime = atol(token);
+		}
         //create the burst
         burstToAdd = createBurst(burstNum, cpuTime, ioTime);
         //ands the new burst to the list of burst
+
         burstList = addBurst(burstToAdd, burstList);
-        tempLine = getLine(fp,buffer);
+        //tempLine = getLine(fp,buffer);
     }
     
     newThread->firstBurst = burstList;
     newThread->next = NULL;
+	burstList = NULL;
+    printf("current Line: %s\n",tempLine);
     
     return newThread;
 }
 
 thread *addThread(thread *threadToAdd, thread *threadList){
-    if (threadList == NULL)
-        threadList = threadToAdd;
-    else {
+    printf("in addThread: %p\n",threadList);
+    if (threadList == NULL){
+    threadList = threadToAdd;
+    }else {
         //find the last item in the list
+        printf("here1\n");
         
         int check = 0;
+        thread *currentThread  = threadList;
+        printf("here2\n");
         while (check==0){
-            thread *currentThread  = threadList;
+        printf("here3\n");
             if (currentThread->next == NULL){
                 check = 1;
                 currentThread->next = threadToAdd;
-                
-            } else 
-                currentThread = currentThread->next;    
-        }
+                printf("adding thread\n");
+            } else {
+                currentThread = currentThread->next;
+			}
+		}
     }
     return threadList;
 }
@@ -245,25 +266,30 @@ burst *createBurst(int burstNum, int cpuTime, int ioTime){
     newBurst->cpuTime = cpuTime;
     newBurst->ioTime = ioTime;
     newBurst->next = NULL;
+
+	printf("%d %d %d\n",newBurst->burstNum, newBurst->cpuTime, newBurst->ioTime);
     return newBurst;
 }
 
 burst *addBurst(burst *burstToAdd, burst *burstList){
-    if (burstList == NULL)
+    burst *currentBurst = burstList;
+    printf("%p, %p\n",burstList, currentBurst);
+    if (burstList == NULL){
+		printf("Was first burst\n");
         burstList = burstToAdd;
-    else {
+    }else {
         //find the last item in the list
-        
         int check = 0;
         while (check==0){
-            burst *currentBurst  = burstList;
             if (currentBurst->next == NULL){
                 check = 1;
                 currentBurst->next = burstToAdd;
-                
-            } else 
-                currentBurst = currentBurst->next;    
-        }
+                printf("adding burst\n");
+            } else {
+                currentBurst = currentBurst->next;
+				printf("in between\n");
+        	}
+		}
     }
     return burstList;
 }
