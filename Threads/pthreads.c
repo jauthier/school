@@ -26,7 +26,7 @@ typedef struct process {
 } process;
 
 char *getLine(FILE *fp, char *line);
-void createNewProcess(FILE *fp, int id, int threadNum);
+process *createNewProcess(FILE *fp, int id, int threadNum);
 thread *createNewThread(FILE *fp, int threadID, int cpuTime, int ioTime);
 thread *addThread(thread *threadToAdd, thread *threadList);
 burst *createBurst(int burstNum, int cpuTime, int ioTime);
@@ -39,6 +39,7 @@ int main (int argc, char *argv){
     int processSwitchTime;
     char buffer [500];
     process *processList;
+    process *processToAdd;
     char fileName[100] = "inputFile.txt";
     int i;
     
@@ -61,16 +62,24 @@ int main (int argc, char *argv){
     processSwitchTime = atol(token);
     
     printf("there are %d processes, %d, %d.\n", numProcesses, threadSwitchTime, processSwitchTime);
+    char *tempLine;
     
-    //get second line, process number and number of threads
+    
+    
+    //make a list of processes
     for (i=0;i<numProcesses;i++){
+       
+        tempLine = getLine(fp, buffer);
+        token = strtok(tempLine, " ");
+        int processNum = atol(token);
+        token = strtok(NULL, " ");
+        int threadNum = atol(token);
         
+        processToAdd = createNewProcess(fp,processNum,threadNum);
+        processList = addProcess(processToAdd, processList);
+       
     }
-    char *processInfo = getLine(fp, buffer);
-    token = strtok(processInfo, " ");
-    int processNum = atol(token);
-    token = strtok(NULL, " ");
-    int threadNum = atol(token);
+    
     
     return 0;
 }
@@ -95,15 +104,12 @@ char* getLine(FILE* fp, char *line){
     }
     
     lineBuffer[count] = '\0'; 
-
-    
     stpcpy(line, lineBuffer);
     free(lineBuffer);
-   
     return line;
 }
 
-void createNewProcess(FILE *fp, int id, int threadNum){
+process *createNewProcess(FILE *fp, int id, int threadNum){
     
     char buffer[100];
     char *tempLine;
@@ -144,6 +150,28 @@ void createNewProcess(FILE *fp, int id, int threadNum){
     }
     newProcess->firstThread = threadList;
     newProcess->next = NULL;
+    return newProcess;
+}
+
+process *addProcess(process *processToAdd, process *processList){
+    if (processList == NULL)
+        procesList = processToAdd;
+    else {
+        //find the last item in the list
+        
+        int check = 0;
+        while (check==0){
+            thread *currentProcess = processList;
+            if (currentProcess->next == NULL){
+                check = 1;
+                currentProcess->next = processToAdd;
+                
+            } else 
+                currentProcess = currentProcess->next;    
+        }
+    }
+    return processList;
+    
     
 }
 
