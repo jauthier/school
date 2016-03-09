@@ -247,6 +247,7 @@ int addIOTime(burst *burstList){
     
     while (currentBurst->next != NULL) {
         sum = sum + currentBurst->ioTime;
+        printf("io burst: %d\n",currentBurst->ioTime);
         currentBurst = currentBurst->next;
     }
     //get the last one
