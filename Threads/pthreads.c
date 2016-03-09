@@ -137,7 +137,7 @@ void createNewProcess(FILE *fp, int id, int threadNum){
         numBursts = atol(token);
         
         //creates a new thread and give the address of the new thread to threadToAdd
-        threadToAdd = createNewThread(threadID, arriveTime, numBursts);
+        threadToAdd = createNewThread(fp, threadID, arriveTime, numBursts);
         //ands the new thread to the list of threads
         threadList = addThread(threadToAdd, threadList);
         tempLine = getLine(fp,buffer);
@@ -227,10 +227,10 @@ burst *addBurst(burst *burstToAdd, burst *burstList){
         
         int check = 0;
         while (check==0){
-            thread *currentBurst  = burstList;
+            burst *currentBurst  = burstList;
             if (currenturst->next == NULL){
                 check = 1;
-                currenturst->next = burstToAdd;
+                currentBurst->next = burstToAdd;
                 
             } else 
                 currentBurst = currentBurst->next;    
