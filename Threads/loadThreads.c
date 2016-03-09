@@ -16,6 +16,9 @@ typedef struct thread {
     int arriveTime;
     int numOfBursts;
     char *state;
+    int endTime;
+    int totalCPU;
+    int totalIO;
     struct burst *firstBurst;
     struct thread *next;
 } thread;
@@ -34,10 +37,7 @@ int main (int argc, char *argv){
     thread *threadList;
     threadList = loadThreads(fp);
     fclose(fp);
-    
-    
-    
-    
+    return 0;
 }
 
 thread *loadThreads(FILE* fp){
@@ -47,19 +47,13 @@ thread *loadThreads(FILE* fp){
     int processSwitchTime;
     char buffer [50];
     thread *threadList = NULL;
-    
     int i=0;
+    char *tempLine;
     
-    //for parsing
-    //first line <how many processes, num of units to switch
-    //threads in same process, num units to switch threads in different
-    // processes>
-    
-    
-    
-    //get the first line in the file
+    /* Get the first line of the input file, this will tell how many processes there are,
+    the time it takes to switch beteen threads of the same process and the time it takes
+    to switch between threads of different processes */
     char *firstline = getLine(fp, buffer);
-    //parse the first line
     char *token = strtok(firstline," ");
     numProcesses = atol(token);
     token = strtok(NULL, " ");
@@ -67,30 +61,30 @@ thread *loadThreads(FILE* fp){
     token = strtok(NULL, " ");
     processSwitchTime = atol(token);
     
-    printf("there are %d processes, %d, %d.\n", numProcesses, threadSwitchTime, processSwitchTime);
-    char *tempLine;
-    
-    
-    
-    //make a list of threads
+    /* Make a list of threads. First we must get the line decribing the process to know
+    how many threads each process has. All the threads are add to the same list. */
     for (i=0;i<numProcesses;i++){
 		
-        tempLine = getLine(fp, buffer);
-        token = strtok(tempLine, " ");
-        int processNum = atol(token);
-        token = strtok(NULL, " ");
-        int threadNum = atol(token);
-        
         int j = 0;
+        int processNum;
+        int threadNum;
         int threadID;
         int arriveTime;
         int numBursts;
         struct thread *threadToAdd;
         
+        //get the line
+        tempLine = getLine(fp, buffer);
+        //parse the line
+        token = strtok(tempLine, " ");
+        processNum = atol(token);
+        token = strtok(NULL, " ");
+        threadNum = atol(token);
+        
+        //get the right amount of threads
         for (j=0;j<threadNum;j++){
             char threadBuffer[50];
             tempLine = getLine(fp, threadBuffer);
-            printf("tempLine: %s\n",tempLine);
             token = strtok(tempLine, " ");
             threadID = atol(token);
             token = strtok(NULL, " ");
@@ -102,8 +96,6 @@ thread *loadThreads(FILE* fp){
             printf("one thread made\n");
             //ands the new thread to the list of threads
             threadList = addThread(threadToAdd, threadList);
-            printf("thread added\n");
-            printf("the current line: %s\n",tempLine);
         }
     }
     return threadList;
@@ -153,8 +145,6 @@ thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, i
     newThread->numOfBursts = numBursts;
     newThread->state = "new";
     
-	printf("number of bursts: %d\n",numBursts);
-
     //get the line of the first burst
     //parse the line and assigin it to the appropriate variables
     for (i=0;i<numBursts;i++){
@@ -178,35 +168,28 @@ thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, i
         //ands the new burst to the list of burst
 
         burstList = addBurst(burstToAdd, burstList);
-        //tempLine = getLine(fp,buffer);
     }
     
+    newThread->totalCPU = addCPUTime(burstList);
+    newThread->totalIO = addIOTime(burstList);
+    printf("cpu time: %d, io time: %d\n",newThread->totalCPU,newThread->totalIO);
     newThread->firstBurst = burstList;
     newThread->next = NULL;
-	burstList = NULL;
-    printf("current Line: %s\n",tempLine);
-    
+	burstList = NULL;    
     return newThread;
 }
 
 thread *addThread(thread *threadToAdd, thread *threadList){
-    printf("in addThread: %p\n",threadList);
     if (threadList == NULL){
-        printf("First Thread\n");
         threadList = threadToAdd;
     }else {
-        //find the last item in the list
-        printf("here1\n");
-        
+        //find the last item in the list        
         int check = 0;
         thread *currentThread  = threadList;
-        printf("here2\n");
         while (check==0){
-        printf("here3\n");
             if (currentThread->next == NULL){
                 check = 1;
                 currentThread->next = threadToAdd;
-                printf("adding thread\n");
             } else {
                 currentThread = currentThread->next;
 			}
@@ -222,16 +205,12 @@ burst *createBurst(int burstNum, int cpuTime, int ioTime){
     newBurst->cpuTime = cpuTime;
     newBurst->ioTime = ioTime;
     newBurst->next = NULL;
-
-	printf("%d %d %d\n",newBurst->burstNum, newBurst->cpuTime, newBurst->ioTime);
     return newBurst;
 }
 
 burst *addBurst(burst *burstToAdd, burst *burstList){
     burst *currentBurst = burstList;
-    printf("%p, %p\n",burstList, currentBurst);
     if (burstList == NULL){
-		printf("Was first burst\n");
         burstList = burstToAdd;
     }else {
         //find the last item in the list
@@ -240,12 +219,40 @@ burst *addBurst(burst *burstToAdd, burst *burstList){
             if (currentBurst->next == NULL){
                 check = 1;
                 currentBurst->next = burstToAdd;
-                printf("adding burst\n");
             } else {
                 currentBurst = currentBurst->next;
-				printf("in between\n");
         	}
 		}
     }
     return burstList;
+}
+
+int addCPUTime(burst *burstList){
+    int sum;
+    burst *currentBurst = burstList;
+    
+    while (currentBurst->next != NULL) {
+        sum = sum + currentBurst->cpuTime;
+        currentBurst = currentBurst->next;
+    }
+    //get the last one
+    sum = sum + currentBurst->cpuTime;
+    
+    return sum;
+}
+
+int addIOTime(burst *burstList){
+    int sum;
+    burst *currentBurst = burstList;
+    
+    while (currentBurst->next != NULL) {
+        sum = sum + currentBurst->ioTime;
+        currentBurst = currentBurst->next;
+    }
+    //get the last one
+    sum = sum + currentBurst->ioTime;
+    
+    return sum;
+    
+    
 }
