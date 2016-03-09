@@ -156,7 +156,7 @@ process *createNewProcess(FILE *fp, int id, int threadNum){
 
 process *addProcess(process *processToAdd, process *processList){
     if (processList == NULL)
-        procesList = processToAdd;
+        processList = processToAdd;
     else {
         //find the last item in the list
         
