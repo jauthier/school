@@ -27,7 +27,7 @@ typedef struct process {
 
 char *getLine(FILE *fp, char *line);
 void createNewProcess(FILE *fp, int id, int threadNum);
-thread *createNewThread(int threadID, int cpuTime, int ioTime);
+thread *createNewThread(FILE *fp, int threadID, int cpuTime, int ioTime);
 thread *addThread(thread *threadToAdd, thread *threadList);
 burst *createBurst(int burstNum, int cpuTime, int ioTime);
 burst *addBurst(burst *burstToAdd, burst *burstList);
@@ -40,6 +40,7 @@ int main (int argc, char *argv){
     char buffer [500];
     process *processList;
     char fileName[100] = "inputFile.txt";
+    int i;
     
     //for parsing
     //first line <how many processes, num of units to switch
@@ -155,6 +156,7 @@ thread *createNewThread(FILE *fp, int threadID, int arriveTime, int numBursts){
     char buffer[50];
     char *tempLine;
     char *token;
+    int i;
     
     thread *newThread;
     newThread = malloc(sizeof(thread));
@@ -166,7 +168,7 @@ thread *createNewThread(FILE *fp, int threadID, int arriveTime, int numBursts){
     //get the line of the first burst
     tempLine = getLine(fp, buffer);
     //parse the line and assigin it to the appropriate variables
-    for (i=0;i<threadNum;i++){
+    for (i=0;i<numBursts;i++){
         token = strtok(tempLine, " ");
         burstNum = atol(token);
         token = strtok(NULL, " ");
