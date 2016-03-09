@@ -251,8 +251,9 @@ int addIOTime(burst *burstList){
         currentBurst = currentBurst->next;
     }
     //get the last one
+    printf("%d\n",currentBurst->ioTime);
     sum = sum + currentBurst->ioTime;
-    
+    printf("%d\n",currentBurst->ioTime);
     return sum;
     
     
