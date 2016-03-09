@@ -20,7 +20,7 @@ typedef struct thread {
     struct thread *next;
 } thread;
 
-thread *loadThrerads(FILE* fp);
+thread *loadThreads(FILE* fp);
 char *getLine(FILE *fp, char *line);
 thread *createNewThread(FILE *fp, int processID, int threadID, int cpuTime, int ioTime);
 thread *addThread(thread *threadToAdd, thread *threadList);
@@ -40,7 +40,7 @@ int main (int argc, char *argv){
     
 }
 
-thread *loadThrerads(FILE* fp){
+thread *loadThreads(FILE* fp){
 
     int numProcesses;
     int threadSwitchTime;
