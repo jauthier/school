@@ -23,6 +23,9 @@ typedef struct thread {
     struct thread *next;
 } thread;
 
+int getNumThreads(thread* threadList);
+thread *sortList(thread *threadList, int numThreads);
+void printList(thread *list);
 thread *loadThreads(FILE* fp);
 char *getLine(FILE *fp, char *line);
 thread *createNewThread(FILE *fp, int processID, int threadID, int cpuTime, int ioTime);
@@ -40,7 +43,7 @@ int main (int argc, char *argv){
     
     printList(threadList);
     int numThreads = getNumThreads(threadList);
-    threadList = sortList(threadList, numTheads);
+    threadList = sortList(threadList, numThreads);
     
     printList(threadList);
     
