@@ -228,7 +228,7 @@ burst *addBurst(burst *burstToAdd, burst *burstList){
         int check = 0;
         while (check==0){
             burst *currentBurst  = burstList;
-            if (currenturst->next == NULL){
+            if (currentBurst->next == NULL){
                 check = 1;
                 currentBurst->next = burstToAdd;
                 
