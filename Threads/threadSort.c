@@ -23,6 +23,12 @@ typedef struct thread {
     struct thread *next;
 } thread;
 
+int counter = 0;
+thread *notArrivedYet = NULL;
+thread *readyQueue = NULL;
+thread *waitQueue = NULL;
+thread *running = NULL;
+
 int getNumThreads(thread* threadList);
 thread *sortList(thread *threadList, int numThreads);
 void printList(thread *list);
@@ -46,15 +52,73 @@ int main (int argc, char *argv){
     threadList = sortList(threadList, numThreads);
     
     printList(threadList);
+    notArrivedYet = threadList;
 
-
-
-
-
-
+    pthread_t tid[numThreads];
     
+    fcfsRun();
+
+
+
+
+
     return 0;
 }
+
+void fcfsRun(){
+
+    int moreLeft;
+
+    while(counter < 20){
+        checkArrival();
+        
+        thread *temp = readyQueue;
+        while(temp != NULL){
+            printf("Thread %d, Process %d\n",temp->tid,temp->pid):
+        }
+        
+        counter ++;
+    }
+}
+
+
+void checkArrival(){
+    thread *checkThread = notArrivedYet;
+    
+    while ((checkThread != NULL) && (checkThread->arriveTime == counter){
+        thread *lastThread = getLast(readyQueue); //get the last thread in the ready queue
+        if (checkThread->next == NULL){
+            if (lastThread == NULL)
+                readyQueue = checkThread; //this is the first in the ready queue
+            else
+                lastThread->next = checkThread; //add thready to the end of the ready queue
+        } else {
+            thread *hold = checkThread->next; // holds the following threads
+                
+            if (lastThread == NULL)
+                    readyQueue = checkThread; //this is the first in the ready queue
+            else
+                lastThread->next = checkThread; //add thready to the end of the ready queue
+            checkThread = hold; //move the second thread to first
+        }
+    }
+}
+
+int checkWait(){
+
+}
+
+thread *getLast (thread *threadList){
+    thread *tempList = threadList;
+    
+    while(tempList->next != NULL){
+        tempList = tempList->next;
+    }
+    return tempList;
+}
+
+
+
 
 int getNumThreads(thread* threadList){
     int num = 0;
