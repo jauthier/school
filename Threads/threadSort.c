@@ -67,6 +67,7 @@ int main (int argc, char *argv){
     fclose(fp);
     
     // initialize the CPU
+	CPU = malloc(sizeof(processor));
     CPU->switching = false;
     CPU->timeLeft = 0;
     CPU->running = NULL;
@@ -94,17 +95,20 @@ void fcfsRun(){
     int moreLeft;
 	thread *temp = NULL;
 
-    while(counter < 28){
-        checkArrival();
-        
-        temp = readyQueue;
-        while(temp != NULL){
-            printf("Thread %d, Process %d\n",temp->tid,temp->pid);
-			temp = temp->next;
-        }
+    while(counter < 100){
+		printf("\nCOUNT: %d\n",counter);
+        if (notArrivedYet != NULL)
+		    checkArrival();
+		checkRunning();
 
-        
-        
+		if (CPU->switching == false && CPU->running != NULL){
+        	printList(CPU->running);
+        	printf("%d\n",CPU->running->firstBurst->cpuTime);
+        }else
+			printf("switching\n");
+
+		printList(waitQueue);
+
         counter ++;
     }
 }
@@ -119,9 +123,9 @@ void checkArrival(){
                 checkThread->state = "ready";
                 readyQueue = checkThread; //this is the first in the ready queue
             } else {
-                checkThread->state = "ready";
                 lastThread->next = checkThread; //add thready to the end of the ready queue
 				notArrivedYet = NULL;
+                checkThread = NULL;
 			}
         } else {
             thread *hold = checkThread->next; // holds the following threads
@@ -155,7 +159,6 @@ void checkRunning(){
             else
                 CPU->timeLeft = processSwitchTime;
             
-            
             CPU->running->state = "Blocking";
             thread *last = getLast(waitQueue);
             if (last == NULL)
@@ -165,7 +168,7 @@ void checkRunning(){
             CPU->running = NULL;
         }
     } else if ((CPU->running == NULL)&&(CPU->switching == true)){
-        if (CPU->timeLeft == 0){ //done switching
+        if (CPU->timeLeft <= 2){ //on its last one
             CPU->switching = false;
         } else {
             CPU->timeLeft--;
