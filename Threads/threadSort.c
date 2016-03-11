@@ -26,8 +26,8 @@ typedef struct thread {
 } thread;
 
 enum boolean{
-    false;
-    true;
+    false,
+    true
 };
 
 typedef struct processor {
@@ -46,6 +46,7 @@ processor *CPU;
 
 void fcfsRun();
 void checkArrival();
+void checkRunning();
 thread *getLast (thread *threadList);
 int getNumThreads(thread* threadList);
 thread *sortList(thread *threadList, int numThreads);
