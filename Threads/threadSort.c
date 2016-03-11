@@ -51,6 +51,7 @@ enum boolean verbose = false;
 void fcfsRun();
 void checkArrival();
 void checkRunning();
+void checkWait();
 thread *getLast (thread *threadList);
 int getNumThreads(thread* threadList);
 thread *sortList(thread *threadList, int numThreads);
@@ -137,7 +138,8 @@ void fcfsRun(){
 			printf("switching\n");
 
 		printList(waitQueue);
-
+        checkWait();
+        printList(waitQueue);
         counter ++;
     }
 }
@@ -213,7 +215,7 @@ void checkRunning(){
 
 void checkWait(){
     thread *check = waitQueue;
-    thread *pervious = NULL
+    thread *pervious = NULL;
     while (check != NULL){
         //look at io burst time of each
         if (check->firstBurst->ioTime == 0){ //finished io
