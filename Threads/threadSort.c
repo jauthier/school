@@ -39,10 +39,14 @@ typedef struct processor {
 int counter = 0;
 int threadSwitchTime;
 int processSwitchTime;
+int quantum;
 thread *notArrivedYet = NULL;
 thread *readyQueue = NULL;
 thread *waitQueue = NULL;
+thread *terminated = NULL;
 processor *CPU;
+enum boolean detailed = false;
+enum boolean verbose = false;
 
 void fcfsRun();
 void checkArrival();
@@ -58,7 +62,32 @@ thread *addThread(thread *threadToAdd, thread *threadList);
 burst *createBurst(int burstNum, int cpuTime, int ioTime);
 burst *addBurst(burst *burstToAdd, burst *burstList);
 
-int main (int argc, char *argv){
+int main (int argc, char *argv[]){
+    
+    /* user in bits
+    
+    if (argc < 3){
+        printf("Invaid Input.\n");
+        exit(0);
+    }
+    int i = 1;
+    char type = 'f'; //r for RR, f for FCFS
+    for (i=1;i<argc;i++){ //skip the first one
+        if (strcmp(argv[i],"-d")){
+            detailed = true;
+        }else if (strcmp(argv[i],"-v")){
+            verbose = true;
+        }else if (strcmp(argv[i],"-r")){
+            type = 'r';
+            quantum = atol(argv[i+1]);
+        }else if (strcmp(argv[i],"<")){
+            strcpy(fileName, argv[i+1]);
+        }
+    }
+    
+    
+    */
+    
     
     char fileName[100] = "inputFile.txt";
     FILE* fp = fopen(fileName,"r");
@@ -182,8 +211,61 @@ void checkRunning(){
     }
 }
 
-int checkWait(){
-
+void checkWait(){
+    thread *check = waitQueue;
+    thread *pervious = NULL
+    while (check != NULL){
+        //look at io burst time of each
+        if (check->firstBurst->ioTime == 0){ //finished io
+            thread *last = getLast(readyQueue);
+            thread *start = NULL;
+            if (previous == NULL){
+                thread *hold = check->next;
+                check->next = NULL;
+                check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
+                if (check->firstBurst != NULL){
+                    if (last != NULL)
+                        last->next = check; //add the finished thread to the 
+                    else 
+                        readyQueue = check;
+                }else {
+                    thread *termLast = getLast(terminated);
+                    if (termLast == NULL)
+                        terminated = check;
+                    else
+                        termLast->next = check;
+                }
+                if (hold != NULL)
+                    start = hold;
+                check = hold;
+            }else {
+                thread *hold = check->next;
+                check->next = NULL;
+                check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
+                if (check->firstBurst != NULL){
+                    if (last != NULL)
+                        last->next = check; //add the finished thread to the 
+                    else 
+                        readyQueue = check;
+                }else {
+                    thread *termLast = getLast(terminated);
+                    if (termLast == NULL)
+                        terminated = check;
+                    else
+                        termLast->next = check;
+                }
+                if (hold != NULL)
+                    previous->next = hold;
+                else
+                    previous->next = NULL;
+                check = hold;
+            }
+        }else {
+            check->firstBurst->ioTime--;
+            check = check->next;
+        }
+        
+    }
 }
 
 thread *getLast (thread *threadList){
