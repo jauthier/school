@@ -29,6 +29,9 @@ thread *readyQueue = NULL;
 thread *waitQueue = NULL;
 thread *running = NULL;
 
+void fcfsRun();
+void checkArrival();
+thread *getLast (thread *threadList);
 int getNumThreads(thread* threadList);
 thread *sortList(thread *threadList, int numThreads);
 void printList(thread *list);
@@ -54,9 +57,9 @@ int main (int argc, char *argv){
     printList(threadList);
     notArrivedYet = threadList;
 
-    pthread_t tid[numThreads];
     
     fcfsRun();
+
 
 
 
@@ -68,13 +71,15 @@ int main (int argc, char *argv){
 void fcfsRun(){
 
     int moreLeft;
+	thread *temp = NULL;
 
-    while(counter < 20){
+    while(counter < 28){
         checkArrival();
         
-        thread *temp = readyQueue;
+        temp = readyQueue;
         while(temp != NULL){
-            printf("Thread %d, Process %d\n",temp->tid,temp->pid):
+            printf("Thread %d, Process %d\n",temp->tid,temp->pid);
+			temp = temp->next;
         }
         
         counter ++;
@@ -84,22 +89,28 @@ void fcfsRun(){
 
 void checkArrival(){
     thread *checkThread = notArrivedYet;
-    
-    while ((checkThread != NULL) && (checkThread->arriveTime == counter){
+    while ((checkThread != NULL) && (checkThread->arriveTime == counter)){
         thread *lastThread = getLast(readyQueue); //get the last thread in the ready queue
-        if (checkThread->next == NULL){
+        if (checkThread->next == NULL){ // if this is the last thread in the not srrived queue
             if (lastThread == NULL)
                 readyQueue = checkThread; //this is the first in the ready queue
-            else
+            else {
                 lastThread->next = checkThread; //add thready to the end of the ready queue
+				notArrivedYet = NULL;
+			}
         } else {
             thread *hold = checkThread->next; // holds the following threads
                 
-            if (lastThread == NULL)
-                    readyQueue = checkThread; //this is the first in the ready queue
-            else
+            if (lastThread == NULL){
+                checkThread->next = NULL;
+				readyQueue = checkThread; //this is the first in the ready queue
+			}
+            else{
+                checkThread->next = NULL;
                 lastThread->next = checkThread; //add thready to the end of the ready queue
+            }
             checkThread = hold; //move the second thread to first
+            notArrivedYet = hold;
         }
     }
 }
@@ -109,10 +120,15 @@ int checkWait(){
 }
 
 thread *getLast (thread *threadList){
-    thread *tempList = threadList;
-    
-    while(tempList->next != NULL){
-        tempList = tempList->next;
+
+    thread *tempList;
+	if ( threadList == NULL)
+		tempList = NULL;
+	else {
+    	tempList = threadList;
+    	while(tempList->next != NULL){
+        	tempList = tempList->next;
+    	}
     }
     return tempList;
 }
@@ -179,7 +195,7 @@ thread *sortList(thread *threadList, int numThreads){
 void printList(thread *list){
     
     while(list != NULL){
-        printf("arrivetime: %d\n",list->arriveTime);
+        printf("arrive: %d, pid: %d, tid: %d\n",list->arriveTime,list->pid,list->tid);
         list = list->next;
     }
 }

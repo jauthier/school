@@ -10,10 +10,13 @@ int main(){
 	start = clock();
 	time(&start1);
 	int count=0;
-	while ((clock()/CLOCKS_PER_SEC) < 2){
-		printf("%d\n",count);
-		count++;
 
+
+
+
+
+	while (clock() < 20000){
+		wait();
 	}
 	current = clock();
 	time(&end);
