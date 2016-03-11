@@ -139,6 +139,7 @@ void fcfsRun(){
 
 		printList(waitQueue);
         checkWait();
+printf("waitcheck\n");
         printList(waitQueue);
         counter ++;
     }
@@ -215,7 +216,7 @@ void checkRunning(){
 
 void checkWait(){
     thread *check = waitQueue;
-    thread *pervious = NULL;
+    thread *previous = NULL;
     while (check != NULL){
         //look at io burst time of each
         if (check->firstBurst->ioTime == 0){ //finished io
@@ -264,6 +265,7 @@ void checkWait(){
             }
         }else {
             check->firstBurst->ioTime--;
+            previous = check;
             check = check->next;
         }
         
