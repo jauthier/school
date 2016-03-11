@@ -93,7 +93,6 @@ thread *loadThreads(FILE* fp){
             numBursts = atol(token);
             //creates a new thread and give the address of the new thread to threadToAdd
             threadToAdd = createNewThread(fp, processNum, threadID, arriveTime, numBursts);
-            printf("one thread made\n");
             //ands the new thread to the list of threads
             threadList = addThread(threadToAdd, threadList);
         }
@@ -172,7 +171,6 @@ thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, i
     
     newThread->totalCPU = addCPUTime(burstList);
     newThread->totalIO = addIOTime(burstList);
-    printf("cpu time: %d, io time: %d\n",newThread->totalCPU,newThread->totalIO);
     newThread->firstBurst = burstList;
     newThread->next = NULL;
 	burstList = NULL;    
@@ -230,29 +228,21 @@ burst *addBurst(burst *burstToAdd, burst *burstList){
 int addCPUTime(burst *burstList){
     int sum = 0;
     burst *currentBurst = burstList;
-    
     while (currentBurst->next != NULL) {
         sum = sum + currentBurst->cpuTime;
         currentBurst = currentBurst->next;
     }
     //get the last one
     sum = sum + currentBurst->cpuTime;
-    
     return sum;
 }
 
 int addIOTime(burst *burstList){
     int sum = 0;
     burst *currentBurst = burstList;
-    
     while (currentBurst->next != NULL) {
         sum = sum + currentBurst->ioTime;
-        printf("io burst: %d\n",currentBurst->ioTime);
         currentBurst = currentBurst->next;
     }
-    
-    printf("%d\n",sum);
     return sum;
-    
-    
 }

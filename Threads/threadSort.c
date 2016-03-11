@@ -6,7 +6,6 @@
 typedef struct burst {
     int burstNum;
     int runStartTime;
-    int timeLeft; //for when it is interrupted
     int cpuTime;
     int ioTime;
     struct burst *next;
@@ -40,6 +39,7 @@ int counter = 0;
 int threadSwitchTime;
 int processSwitchTime;
 int quantum;
+int quantumLeft = 0; //how much time the current running process has left
 thread *notArrivedYet = NULL;
 thread *readyQueue = NULL;
 thread *waitQueue = NULL;
@@ -48,9 +48,13 @@ processor *CPU;
 enum boolean detailed = false;
 enum boolean verbose = false;
 
+
+
+void fcfsRun();
 void fcfsRun();
 void checkArrival();
-void checkRunning();
+void checkRunningFCFS();
+void checkRunningRR();
 void checkWait();
 thread *getLast (thread *threadList);
 int getNumThreads(thread* threadList);
@@ -65,6 +69,7 @@ burst *addBurst(burst *burstToAdd, burst *burstList);
 
 int main (int argc, char *argv[]){
     
+    char type = 'f'; //r for RR, f for FCFS
     /* user in bits
     
     if (argc < 3){
@@ -109,27 +114,27 @@ int main (int argc, char *argv[]){
     printList(threadList);
     notArrivedYet = threadList;
 
+    if (type == 'f')
+        fcfsRun();
+    else if (type == 'r')
+        rrRun();
     
-    fcfsRun();
-
-
-
-
-
-
+    if (type)
+    
+    printf("Total time required is %d time units\n",counter);
+    
+    //print out thread details  --- turnaround time = end time - arrival time
+    
     return 0;
 }
 
 void fcfsRun(){
 
-    int moreLeft;
-	thread *temp = NULL;
-
-    while(counter < 100){
+    while(readyQueue != NULL || waitQueue != NULL || notArrivedYet != NULL){
 		printf("\nCOUNT: %d\n",counter);
         if (notArrivedYet != NULL)
 		    checkArrival();
-		checkRunning();
+		checkRunningFCFS();
 
 		if (CPU->switching == false && CPU->running != NULL){
         	printList(CPU->running);
@@ -139,12 +144,31 @@ void fcfsRun(){
 
 		printList(waitQueue);
         checkWait();
-printf("waitcheck\n");
         printList(waitQueue);
         counter ++;
     }
 }
 
+void rrRun(){
+
+    while(readyQueue != NULL || waitQueue != NULL || notArrivedYet != NULL){
+		printf("\nCOUNT: %d\n",counter);
+        if (notArrivedYet != NULL)
+		    checkArrival();
+		checkRunningRR();
+
+		if (CPU->switching == false && CPU->running != NULL){
+        	printList(CPU->running);
+        	printf("%d\n",CPU->running->firstBurst->cpuTime);
+        }else
+			printf("switching\n");
+
+		printList(waitQueue);
+        checkWait();
+        printList(waitQueue);
+        counter ++;
+    }
+}
 
 void checkArrival(){
     thread *checkThread = notArrivedYet;
@@ -178,7 +202,7 @@ void checkArrival(){
     }
 }
 
-void checkRunning(){
+void checkRunningFCFS(){
     
     if (CPU->running != NULL){
         int runTimeLeft = CPU->running->firstBurst->cpuTime - (counter - CPU->running->firstBurst->runStartTime);
@@ -191,12 +215,23 @@ void checkRunning(){
             else
                 CPU->timeLeft = processSwitchTime;
             
-            CPU->running->state = "Blocking";
-            thread *last = getLast(waitQueue);
-            if (last == NULL)
-                waitQueue = CPU->running;
-            else
-                last->next = CPU->running;
+            thread *last;
+            
+            if (CPU->running->firstBurst->ioTime == 0){
+                CPU->running->state = "terminated";
+                CPU->running->firstBurst = NULL;
+                last  = getLast(terminated);
+                if (last == NULL)
+                    terminated = CPU->running;
+                else 
+                    last-> next = CPU->running;
+            }else {
+                CPU->running->state = "blocking";
+                if (last == NULL)
+                    waitQueue = CPU->running;
+                else
+                    last->next = CPU->running;
+            }
             CPU->running = NULL;
         }
     } else if ((CPU->running == NULL)&&(CPU->switching == true)){
@@ -214,6 +249,71 @@ void checkRunning(){
     }
 }
 
+void checkRunningRR(){
+    
+    if (CPU->running != NULL){
+        int runTimeLeft = CPU->running->firstBurst->cpuTime - (counter - CPU->running->firstBurst->runStartTime);
+        
+        if (runTimeLeft == 0 || quantumLeft == 0){ // the process is done or its time is up
+            //take it out and add it to the waiting queue
+            //set CPU to switching = true and timeLeft to the proper number, need to know about the next thread coming in
+            CPU->switching = true; //set the CPU to switching
+            //set the amount of time required to switch
+            if (CPU->running->pid == readyQueue->pid)
+                CPU->timeLeft = threadSwitchTime; 
+            else
+                CPU->timeLeft = processSwitchTime;
+            
+            
+            
+            thread *last;
+            if (runTimeLeft == 0){ //the thread have finished
+                if (CPU->running->firstBurst->ioTime == 0){ //if this was the last burst
+                    CPU->running->state = "terminated";
+                    CPU->running->firstBurst = NULL;
+                    last  = getLast(terminated);
+                    //send to the list of terminated threads
+                    if (last == NULL)
+                        terminated = CPU->running;
+                    else 
+                        last-> next = CPU->running;
+                }else { //if this wasnt the last burst
+                    CPU->running->state = "blocking"; //change state of thread
+                    //send to the waiting queue
+                    if (last == NULL)
+                        waitQueue = CPU->running;
+                    else
+                        last->next = CPU->running;
+                }
+            }else { //the pthread ran out of time
+                CPU->running->firstBurst->cpuTime = runTimeLeft; //so it knows how much time is left next time it runs
+                last = getLast(readyQueue);
+                if (last == NULL)
+                    readyQueue = CPU->running;
+                else 
+                    last->next = CPU->running;
+            }
+            
+            
+            CPU->running = NULL; //say there is no process here
+        }else 
+            quantumLeft--;
+    } else if ((CPU->running == NULL)&&(CPU->switching == true)){
+        if (CPU->timeLeft <= 2){ //on its last one
+            CPU->switching = false;
+        } else {
+            CPU->timeLeft--;
+        }
+    } else if ((CPU->running == NULL)&&(CPU->switching == false)){ //nothing being processed and there is no switching in progress
+        readyQueue->firstBurst->runStartTime = counter; //when the burst started
+        thread *hold = readyQueue->next; //hold the next thread in the ready queue
+        CPU->running = readyQueue; //send the first thread to running
+        CPU->running->next = NULL;
+        quantumLeft = quantum; //set time limit
+        readyQueue = hold; //move the next thread to the start of the ready queue
+    }
+}
+
 void checkWait(){
     thread *check = waitQueue;
     thread *previous = NULL;
@@ -226,18 +326,10 @@ void checkWait(){
                 thread *hold = check->next;
                 check->next = NULL;
                 check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
-                if (check->firstBurst != NULL){
-                    if (last != NULL)
-                        last->next = check; //add the finished thread to the 
-                    else 
-                        readyQueue = check;
-                }else {
-                    thread *termLast = getLast(terminated);
-                    if (termLast == NULL)
-                        terminated = check;
-                    else
-                        termLast->next = check;
-                }
+                if (last != NULL)
+                    last->next = check; //add the finished thread to the 
+                else 
+                    readyQueue = check;
                 if (hold != NULL)
                     start = hold;
                 check = hold;
@@ -245,18 +337,10 @@ void checkWait(){
                 thread *hold = check->next;
                 check->next = NULL;
                 check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
-                if (check->firstBurst != NULL){
-                    if (last != NULL)
-                        last->next = check; //add the finished thread to the 
-                    else 
-                        readyQueue = check;
-                }else {
-                    thread *termLast = getLast(terminated);
-                    if (termLast == NULL)
-                        terminated = check;
-                    else
-                        termLast->next = check;
-                }
+                if (last != NULL)
+                    last->next = check; //add the finished thread to the 
+                else 
+                    readyQueue = check;            
                 if (hold != NULL)
                     previous->next = hold;
                 else
@@ -268,7 +352,6 @@ void checkWait(){
             previous = check;
             check = check->next;
         }
-        
     }
 }
 
@@ -285,9 +368,6 @@ thread *getLast (thread *threadList){
     }
     return tempList;
 }
-
-
-
 
 int getNumThreads(thread* threadList){
     int num = 0;
@@ -352,9 +432,6 @@ void printList(thread *list){
         list = list->next;
     }
 }
-
-
-
 
 thread *loadThreads(FILE* fp){
 
