@@ -5,6 +5,8 @@
 
 typedef struct burst {
     int burstNum;
+    int runStartTime;
+    int timeLeft; //for when it is interrupted
     int cpuTime;
     int ioTime;
     struct burst *next;
@@ -23,11 +25,24 @@ typedef struct thread {
     struct thread *next;
 } thread;
 
+enum boolean{
+    false;
+    true;
+};
+
+typedef struct processor {
+    enum boolean switching;
+    int timeLeft;
+    thread *running;
+} processor;
+
 int counter = 0;
+int threadSwitchTime;
+int processSwitchTime;
 thread *notArrivedYet = NULL;
 thread *readyQueue = NULL;
 thread *waitQueue = NULL;
-thread *running = NULL;
+processor *CPU;
 
 void fcfsRun();
 void checkArrival();
@@ -50,6 +65,11 @@ int main (int argc, char *argv){
     threadList = loadThreads(fp);
     fclose(fp);
     
+    // initialize the CPU
+    CPU->switching = false;
+    CPU->timeLeft = 0;
+    CPU->running = NULL;
+        
     printList(threadList);
     int numThreads = getNumThreads(threadList);
     threadList = sortList(threadList, numThreads);
@@ -81,6 +101,8 @@ void fcfsRun(){
             printf("Thread %d, Process %d\n",temp->tid,temp->pid);
 			temp = temp->next;
         }
+
+        
         
         counter ++;
     }
@@ -92,9 +114,11 @@ void checkArrival(){
     while ((checkThread != NULL) && (checkThread->arriveTime == counter)){
         thread *lastThread = getLast(readyQueue); //get the last thread in the ready queue
         if (checkThread->next == NULL){ // if this is the last thread in the not srrived queue
-            if (lastThread == NULL)
+            if (lastThread == NULL){
+                checkThread->state = "ready";
                 readyQueue = checkThread; //this is the first in the ready queue
-            else {
+            } else {
+                checkThread->state = "ready";
                 lastThread->next = checkThread; //add thready to the end of the ready queue
 				notArrivedYet = NULL;
 			}
@@ -103,15 +127,54 @@ void checkArrival(){
                 
             if (lastThread == NULL){
                 checkThread->next = NULL;
+                checkThread->state = "ready";
 				readyQueue = checkThread; //this is the first in the ready queue
 			}
             else{
                 checkThread->next = NULL;
+                checkThread->state = "ready";
                 lastThread->next = checkThread; //add thready to the end of the ready queue
             }
             checkThread = hold; //move the second thread to first
             notArrivedYet = hold;
         }
+    }
+}
+
+void checkRunning(){
+    
+    if (CPU->running != NULL){
+        int runTimeLeft = CPU->running->firstBurst->cpuTime - (counter - CPU->running->firstBurst->runStartTime);
+        if (runTimeLeft == 0){ // the process is done
+            //take it out and add it to the waiting queue
+            //set CPU to switching = true and timeLeft to the proper number, need to know about the next thread coming in
+            CPU->switching = true;
+            if (CPU->running->pid == readyQueue->pid)
+                CPU->timeLeft = threadSwitchTime;
+            else
+                CPU->timeLeft = processSwitchTime;
+            
+            
+            CPU->running->state = "Blocking";
+            thread *last = getLast(waitQueue);
+            if (last == NULL)
+                waitQueue = CPU->running;
+            else
+                last->next = CPU->running;
+            CPU->running = NULL;
+        }
+    } else if ((CPU->running == NULL)&&(CPU->switching == true)){
+        if (CPU->timeLeft == 0){ //done switching
+            CPU->switching = false;
+        } else {
+            CPU->timeLeft--;
+        }
+    } else if ((CPU->running == NULL)&&(CPU->switching == false)){ //nothing being processed and there is no switching in progress
+        readyQueue->firstBurst->runStartTime = counter; //when the burst started
+        thread *hold = readyQueue->next; //hold the next thread in the ready queue
+        CPU->running = readyQueue; //send the first thread to running
+        CPU->running->next = NULL;
+        readyQueue = hold; //move the next thread to the start of the ready queue
     }
 }
 
@@ -206,8 +269,6 @@ void printList(thread *list){
 thread *loadThreads(FILE* fp){
 
     int numProcesses;
-    int threadSwitchTime;
-    int processSwitchTime;
     char buffer [50];
     thread *threadList = NULL;
     int i=0;
