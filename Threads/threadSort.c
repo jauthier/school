@@ -227,6 +227,7 @@ void checkRunningFCFS(){
                     last-> next = CPU->running;
             }else {
                 CPU->running->state = "blocking";
+                printf("here\n");
                 if (last == NULL)
                     waitQueue = CPU->running;
                 else
