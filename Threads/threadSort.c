@@ -51,7 +51,7 @@ enum boolean verbose = false;
 
 
 void fcfsRun();
-void fcfsRun();
+void rrRun();
 void checkArrival();
 void checkRunningFCFS();
 void checkRunningRR();
