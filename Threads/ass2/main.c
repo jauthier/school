@@ -32,6 +32,7 @@ int main (int argc, char *argv[]){
         }else if (strcmp(argv[i],"-r")){
             type = 'r';
             quantum = atol(argv[i+1]);
+        }
     }
     if (type == 'f')
         printf("FCFS Scheduling\n");
