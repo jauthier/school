@@ -7,7 +7,6 @@
 
 int getNumThreads(thread* threadList){
     int num = 0;
-printf("here\n");
     while (threadList != NULL){
         num++;
 		threadList = threadList->next;
@@ -33,16 +32,29 @@ thread *sortList(thread *threadList, int numThreads){
         int i = 0;
         thread *currentThread = sortedList;//start at the beginning of the sorted list
         for(i=0;i<count;i++){ //iterate through sorted List
-            if ((threadList->arriveTime <= currentThread->arriveTime)&& i == 0){ //arrived sooner then the first one
+            if ((threadList->arriveTime < currentThread->arriveTime)&& i == 0){ //arrived sooner then the first one
                 thread* hold = sortedList; // hold the previous first
                 sortedList = threadList; //assign new first thread
                 threadList = threadList->next; //get the next thread to check
                 sortedList->next = hold; //add the previous first after
                 break;
-            }else if ((threadList->arriveTime <= currentThread->arriveTime)&& (i <= count-1)){ //in between two
+            }else if (threadList->arriveTime == currentThread->arriveTime && 1 == 0){
+                thread *hold = currentThread->next; //hold the thread that will be after the thread being inserted
+                currentThread->next = threadList;
+                threadList = threadList->next;
+                currentThread->next->next = hold;
+                break;
+            }else if ((threadList->arriveTime < currentThread->arriveTime)&& (i <= count-1)){ //in between two
                 previous->next = threadList;
                 threadList = threadList->next;
                 previous->next->next = currentThread;
+                break;
+            }else if ((threadList->arriveTime == currentThread->arriveTime)&& (i <= count-1)){ //in between two
+
+                thread *hold = currentThread->next; //hold the thread that will be after the thread being inserted
+                currentThread->next = threadList;
+                threadList = threadList->next;
+                currentThread->next->next = hold;
                 break;
             } else if ((threadList->arriveTime >= currentThread->arriveTime)&& (i == count-1)){ //at the very end
                 currentThread->next = threadList;
@@ -69,19 +81,23 @@ void printList(thread *list){
     }
 }
 
-thread *loadThreads(FILE* fp){
+thread *loadThreads(){
 
     int numProcesses;
     char buffer [50];
     thread *threadList = NULL;
     int i=0;
-    char *tempLine;
+    char *tempLine = malloc(sizeof(char)*20);
     
     /* Get the first line of the input file, this will tell how many processes there are,
     the time it takes to switch beteen threads of the same process and the time it takes
     to switch between threads of different processes */
-    char *firstline = getLine(fp, buffer);
-    char *token = strtok(firstline," ");
+    
+	//char *firstline = getLine(fp, buffer);
+    char *firstLine = malloc(sizeof(char)*20);
+    fgets(buffer, 50, stdin);
+    strcpy(firstLine, buffer);
+    char *token = strtok(firstLine," ");
     numProcesses = atol(token);
     token = strtok(NULL, " ");
     threadSwitchTime = atol(token);
@@ -101,7 +117,8 @@ thread *loadThreads(FILE* fp){
         struct thread *threadToAdd;
         
         //get the line
-        tempLine = getLine(fp, buffer);
+        fgets(buffer,50,stdin);
+        strcpy(tempLine,buffer);
         //parse the line
         token = strtok(tempLine, " ");
         processNum = atol(token);
@@ -111,7 +128,9 @@ thread *loadThreads(FILE* fp){
         //get the right amount of threads
         for (j=0;j<threadNum;j++){
             char threadBuffer[50];
-            tempLine = getLine(fp, threadBuffer);
+            fgets(threadBuffer, 50, stdin);
+            strcpy(tempLine,threadBuffer);
+
             token = strtok(tempLine, " ");
             threadID = atol(token);
             token = strtok(NULL, " ");
@@ -119,7 +138,7 @@ thread *loadThreads(FILE* fp){
             token = strtok(NULL, " ");
             numBursts = atol(token);
             //creates a new thread and give the address of the new thread to threadToAdd
-            threadToAdd = createNewThread(fp, processNum, threadID, arriveTime, numBursts);
+            threadToAdd = createNewThread(processNum, threadID, arriveTime, numBursts);
             //ands the new thread to the list of threads
             threadList = addThread(threadToAdd, threadList);
         }
@@ -127,39 +146,14 @@ thread *loadThreads(FILE* fp){
     return threadList;
 }
 
-char* getLine(FILE* fp, char *line){
-    
-    if (fp == NULL) {
-        printf("Unable to open file.\n");
-        exit(0);
-    }
-    
-    int maxLen = 20;
-    char *lineBuffer = malloc(sizeof(char)*maxLen);
-    
-    int count = 0;
-    char c;
-    c = fgetc(fp);
-    while (c != '\n' && c != EOF){
-        lineBuffer[count] = c;
-        count ++;
-        c = fgetc(fp);
-    }
-    
-    lineBuffer[count] = '\0'; 
-    strcpy(line, lineBuffer);
-    free(lineBuffer);
-    return line;
-}
-
-thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, int numBursts){
+thread *createNewThread(int processID, int threadID, int arriveTime, int numBursts){
     int burstNum;
     int cpuTime;
     int ioTime;
     burst *burstToAdd;
     burst *burstList = NULL;
     char buffer[50];
-    char *tempLine;
+    char *tempLine = malloc(sizeof(char)*20);
     char *token;
     int i;
     
@@ -174,7 +168,8 @@ thread *createNewThread(FILE *fp, int processID, int threadID, int arriveTime, i
     //get the line of the first burst
     //parse the line and assigin it to the appropriate variables
     for (i=0;i<numBursts;i++){
-    tempLine = getLine(fp, buffer);
+        fgets(buffer, 50, stdin);
+        strcpy(tempLine, buffer);
         token = strtok(tempLine, " ");
         burstNum = atol(token);
         token = strtok(NULL, " ");
