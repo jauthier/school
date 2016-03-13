@@ -17,6 +17,8 @@ int main (int argc, char *argv[]){
 	quantum = 50;
     char fileName[100];
     
+    fgets(fileName, 100, stdin);
+	printf("%s",fileName);
     if (argc < 3){
         printf("Invaid Input.\n");
         exit(0);
@@ -30,9 +32,6 @@ int main (int argc, char *argv[]){
         }else if (strcmp(argv[i],"-r")){
             type = 'r';
             quantum = atol(argv[i+1]);
-        }else if (strcmp(argv[i],"<")){
-            strcpy(fileName, argv[i+1]);
-        }
     }
     if (type == 'f')
         printf("FCFS Scheduling\n");
@@ -49,7 +48,16 @@ int main (int argc, char *argv[]){
     CPU->switching = false;
     CPU->timeLeft = 0;
     CPU->running = NULL;
-        
+    
+
+    notArrivedYet = NULL;
+    readyQueue = NULL;
+    waitQueue = NULL;
+    terminated = NULL;
+    counter = 0;
+    verbose = false;
+    detailed = false;
+
     printList(threadList);
     int numThreads = getNumThreads(threadList);
     threadList = sortList(threadList, numThreads);
@@ -74,10 +82,10 @@ int main (int argc, char *argv[]){
     float avTurn = sum/count;
     printf("The average turnaround time was %f time units.\n",avTurn);
     
-    if (detailed = true){
+    if (detailed == true){
         thread *temp2 = terminated;
         while (temp2 != NULL){
-            int turnTime = temp2->endTime - temp2->arriveTime
+            int turnTime = temp2->endTime - temp2->arriveTime;
             printf("Thread %d of Process %d:\n", temp2->tid, temp2->pid);
             printf("arrival time: %d\n", temp2->arriveTime);
             printf("service time: %d units, I/O time: %d, turnaround time: %d, finish time: %d\n",temp2->totalCPU, temp2->totalIO, turnTime, temp2->endTime);
@@ -286,7 +294,6 @@ void checkWait(){
         //look at io burst time of each
         if (check->firstBurst->ioTime == 0){ //finished io
             thread *last = getLast(readyQueue);
-            thread *start = NULL;
             if (previous == NULL){
                 thread *hold = check->next;
                 check->next = NULL;

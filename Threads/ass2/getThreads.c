@@ -3,6 +3,8 @@
  * creating the list of threads
  */
 
+#include "getThreads.h"
+
 int getNumThreads(thread* threadList){
     int num = 0;
 printf("here\n");
@@ -145,7 +147,7 @@ char* getLine(FILE* fp, char *line){
     }
     
     lineBuffer[count] = '\0'; 
-    stpcpy(line, lineBuffer);
+    strcpy(line, lineBuffer);
     free(lineBuffer);
     return line;
 }
