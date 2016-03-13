@@ -69,10 +69,21 @@ int main (int argc, char *argv[]){
     while (temp != NULL){
         sum = sum + (temp->endTime - temp->arriveTime);
         count++;
+        temp = temp->next;
     }
     float avTurn = sum/count;
     printf("The average turnaround time was %f time units.\n",avTurn);
     
+    if (detailed = true){
+        thread *temp2 = terminated;
+        while (temp2 != NULL){
+            int turnTime = temp2->endTime - temp2->arriveTime
+            printf("Thread %d of Process %d:\n", temp2->tid, temp2->pid);
+            printf("arrival time: %d\n", temp2->arriveTime);
+            printf("service time: %d units, I/O time: %d, turnaround time: %d, finish time: %d\n",temp2->totalCPU, temp2->totalIO, turnTime, temp2->endTime);
+            temp2 = temp2->next;
+        }
+    }
     //print out thread details  --- turnaround time = end time - arrival time
     
     return 0;
@@ -81,20 +92,10 @@ int main (int argc, char *argv[]){
 void fcfsRun(){
 
     while(readyQueue != NULL || waitQueue != NULL || notArrivedYet != NULL){
-		printf("\nCOUNT: %d\n",counter);
         if (notArrivedYet != NULL)
 		    checkArrival();
-//    char c = getchar();
 		checkRunningFCFS();
-
-		if (CPU->switching == false && CPU->running != NULL){
-        	printList(CPU->running);
-        	printf("%d\n",CPU->running->firstBurst->cpuTime);
-        }else
-			printf("switching\n");
-
         checkWait();
-        printList(waitQueue);
         counter ++;
     }
 }
@@ -102,19 +103,10 @@ void fcfsRun(){
 void rrRun(){
 
     while(readyQueue != NULL || waitQueue != NULL || notArrivedYet != NULL){
-		printf("\nCOUNT: %d\n",counter);
         if (notArrivedYet != NULL)
 		    checkArrival();
 		checkRunningRR();
-
-		if (CPU->switching == false && CPU->running != NULL){
-        	printList(CPU->running);
-        	printf("%d\n",CPU->running->firstBurst->cpuTime);
-        }else
-			printf("switching\n");
-
         checkWait();
-        printList(waitQueue);
         counter ++;
     }
 }
@@ -126,6 +118,8 @@ void checkArrival(){
         if (checkThread->next == NULL){ // if this is the last thread in the not srrived queue
             if (lastThread == NULL){
                 checkThread->state = "ready";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to ready.\n", counter, checkThread->tid, checkThread->pid, checkThread->state);
                 readyQueue = checkThread; //this is the first in the ready queue
             } else {
                 lastThread->next = checkThread; //add thready to the end of the ready queue
@@ -138,11 +132,15 @@ void checkArrival(){
             if (lastThread == NULL){
                 checkThread->next = NULL;
                 checkThread->state = "ready";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to ready.\n", counter, checkThread->tid, checkThread->pid, checkThread->state);
 				readyQueue = checkThread; //this is the first in the ready queue
 			}
             else{
                 checkThread->next = NULL;
                 checkThread->state = "ready";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to ready.\n", counter, checkThread->tid, checkThread->pid, checkThread->state);
                 lastThread->next = checkThread; //add thready to the end of the ready queue
             }
             checkThread = hold; //move the second thread to first
@@ -168,6 +166,8 @@ void checkRunningFCFS(){
             
             if (CPU->running->firstBurst->ioTime == 0){ //if that was the last burst
                 CPU->running->state = "terminated";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to terminated.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
                 CPU->running->firstBurst = NULL;
                 last  = getLast(terminated);
                 if (last == NULL)
@@ -177,6 +177,8 @@ void checkRunningFCFS(){
             }else {
                 printf("here\n");
                 CPU->running->state = "blocking";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to blocking.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
                 last = getLast(waitQueue);
                 if (last == NULL)
                     waitQueue = CPU->running;
@@ -197,6 +199,8 @@ void checkRunningFCFS(){
         CPU->running = readyQueue; //send the first thread to running
         CPU->running->next = NULL;
         CPU->running->state = "running";
+        if (verbose == true)
+            printf("At time %d: Thread %d of process %d moves from %s to running.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
         readyQueue = hold; //move the next thread to the start of the ready queue
     }
 }
@@ -222,6 +226,8 @@ void checkRunningRR(){
                 if (CPU->running->firstBurst->ioTime == 0){ //if this was the last burst
                     printf("At time %d: change\n",counter);
                     CPU->running->state = "terminated";
+                    if (verbose == true)
+                        printf("At time %d: Thread %d of process %d moves from %s to terminated.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
                     CPU->running->firstBurst = NULL;
                     last  = getLast(terminated);
                     //send to the list of terminated threads
@@ -230,7 +236,8 @@ void checkRunningRR(){
                     else 
                         last-> next = CPU->running;
                 }else { //if this wasnt the last burst
-                    printf("At time %d: Thread %d of process %d moves from %s to blocking.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
+                    if (verbose == true)
+                        printf("At time %d: Thread %d of process %d moves from %s to blocking.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
                     CPU->running->state = "blocking"; //change state of thread
                     //send to the waiting queue
                     last = getLast(waitQueue);
@@ -265,6 +272,8 @@ printf("here1\n");
         CPU->running = readyQueue; //send the first thread to running
         CPU->running->next = NULL;
         CPU->running->state = "running";
+        if (verbose == true)
+            printf("At time %d: Thread %d of process %d moves from %s to running.\n", counter, CPU->running->tid, CPU->running->pid, CPU->running->state);
         quantumLeft = quantum; //set time limit
         readyQueue = hold; //move the next thread to the start of the ready queue
     }
@@ -282,6 +291,9 @@ void checkWait(){
                 thread *hold = check->next;
                 check->next = NULL;
                 check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
+                check->state = "ready";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to ready.\n", counter, check->tid, check->pid, check->state);
                 if (last != NULL)
                     last->next = check; //add the finished thread to the 
                 else 
@@ -297,6 +309,9 @@ void checkWait(){
                 thread *hold = check->next;
                 check->next = NULL;
                 check->firstBurst = check->firstBurst->next; //get rid of the finished bursts
+                check->state = "ready";
+                if (verbose == true)
+                    printf("At time %d: Thread %d of process %d moves from %s to ready.\n", counter, check->tid, check->pid, check->state);
                 if (last != NULL)
                     last->next = check; //add the finished thread to the 
                 else 
