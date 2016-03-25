@@ -3,14 +3,34 @@
 #include <string.h>
 #include <pthread.h>
 
+#define THINKING (0)
+#define HUNGRY (1)
+#define EATING (2)
+#define AVAIL (0)
+#define UNAVAIL (1)
+
+
+typedef struct Philosopher{
+	int id;
+	int  state;
+	pthread_t tid;
+}phil;
+
+typedef struct Chopstick{
+	int id;
+	int state;
+	pthread_mutex_t mutex;
+}cs;
 
 int numPhils;
 int numEats;
-pthread_t *phil;
-pthread_mutex_t *chopstick;
-int *chopstickAvail;
-int *eatsLeft;
-int *state;
+phil **philList;
+cs **csList;
+
+phil *addPhil(int id);
+cs *addCS(int id);
+void *test(void* num);
+void *philosopher(void *threadID);
 
 int main(int argc, char *argv[]){
     
@@ -21,56 +41,99 @@ int main(int argc, char *argv[]){
     
     numPhils = atol(argv[1]); //number of phils
     numEats = atol(argv[2]); //number of times each phil must eat
-    
-    phil = malloc(numPhils * sizeof(pthread_t)); //thread for each philosopher
-    chopstick = malloc(numPhils * sizeof(pthread_mutex_t));//mutex for each chopstick
-    chopstickAvail = malloc(numPhils *sizeof(int));
-    
+	csList = malloc(sizeof(cs)*numPhils);
+	philList = malloc(sizeof(phil)*numPhils);
+
     int i = 0;
-    for (i=0,i<numPhils;i++){
-        chopstickAvail[i] = 0;
-        
-    }
+    for (i=0;i<numPhils;i++) {
+        philList[i] = addPhil(i);
+    	csList[i] = addCS(i);
+	}
     i = 0;
     for (i=0;i<numPhils;i++){
-        pthread_mutex_init(&chopstick[i], NULL);
+        pthread_mutex_init(&csList[i]->mutex, NULL);
     }
     
-    i = 0;
-    for (i=0;i<numPhils;i++){
-        pthread_create(&phil[i], NULL, philosopher, (void *)i);
-        printf("Philosopher %d: thinking\n",i);
+    int j = 0;
+    for (j=0;j<numPhils;j++){
+        printf("Init Phil %d\n",j);
+        pthread_create(&philList[j]->tid, NULL, philosopher, &philList[j]->id);
+        //sleep(3);
+        //printf("Philosopher %d: thinking\n",i);
+    }
+
+     i = 0;
+     for (i=0;i<numPhils;i++){
+        pthread_join(philList[i]->tid,NULL);
+
     }
     return 0;
 }
 
+phil *addPhil(int id){
+	phil *newPhil;
+	newPhil = malloc(sizeof(phil));
+	newPhil->id = id;
+	newPhil->state = THINKING;
+	newPhil->tid;
+	return newPhil;
+}
+
+cs * addCS(int id){
+	cs *newCS;
+	newCS = malloc(sizeof(cs));
+	newCS->id = id;
+	newCS->state = AVAIL;
+	newCS->mutex;
+	return newCS;
+}
+
+void *test(void *num){
+
+	int id = *(int*)num;
+
+	printf("In Phil %d\n",id);
+
+
+}
+
 void *philosopher (void *threadID){
     
-    int rightChopstick, leftChopstick;
-    int id = (int)threadID;
+    int rightCS, leftCS;
+    int id = *(int*)threadID;
     int i = 0;
-    while (i=0;i<numEats[i];i++){ //eat multiple times -- change to for loop
+    printf("In Phil %d\n",id);
+	sleep((rand() % 10) +1);
+    for (i=0;i<numEats;i++){ //eat multiple times -- change to for loop
         //get th ids of the chopstick the phil would use
-        rightChopstick = id;
+        rightCS = id;
         if (id+1 == numPhils)
-            leftChopstick = 0;
+            leftCS = 0;
         else 
-            leftChopstick = id + 1;
+            leftCS = id + 1;
         
         printf("Philosopher %d: hungry\n",id);
-        while(chopstickAvail[rightChopstick] == 1 || chopstickAvail[leftChopstick] == 1){
+        while(csList[rightCS]->state != AVAIL && csList[leftCS]->state != AVAIL){
 
         }
-        pthread_mutex_lock(&chopstick[rightChopstick]);
-        chopstickAvail[rightChopstick] = 1;
-        pthread_mutex_lock(&chopstick[leftChopstick]);            
-        chopstickAvail[leftChopstick] = 1;
-        printf("Philosopher %d: eating\n",id);
-        pthread_mutex_unlock(&chopstick[rightChopstick]);
-        chopstickAvail[rightChopstick] = 0;
-        pthread_mutex_unlock(&chopstick[leftChopstick]);
-        chopstickAvail[leftChopstick] = 0;
+		printf("Chopsticks ready: %d\n",id);
+
+        pthread_mutex_lock(&csList[rightCS]->mutex);
+        csList[rightCS]->state = UNAVAIL;
+        pthread_mutex_lock(&csList[leftCS]->mutex);
+        csList[leftCS]->state = UNAVAIL;
+		printf("Philosopher %d: eating\n",id);
+        sleep(2);
+
+
+
+        pthread_mutex_unlock(&csList[rightCS]->mutex);
+        csList[rightCS]->state = AVAIL;
+        pthread_mutex_unlock(&csList[leftCS]->mutex);
+        csList[leftCS]->state = AVAIL;
         printf("Philosopher %d: thinking\n",id);
+        sleep(3);
     }
+    printf("Out Phil %d\n",id);
     pthread_exit(NULL);
 }
