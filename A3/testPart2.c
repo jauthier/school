@@ -4,13 +4,13 @@
 
 #define TOTALMEM (128)
 
-typeded struct process{
+typedef struct process{
     char id;
     int size;
     int numSwaps;
     int startLocation;
     int endLocation;
-    process next;
+    struct process *next;
 }process;
 
 char memory[TOTALMEM];
@@ -19,6 +19,18 @@ process *finished;
 process *waiting;
 process *loaded;
 
+void initMem();
+void firstFit();
+int getNextEmpty();
+int checkSpace(int spaceStart, int sizeNeeded);
+void loadToMemory(int startLoc);
+void swap();
+process *getLast(process *list);
+process *parseFile(FILE *fp);
+process *makeProcess(char id, int size);
+process *addProcess(process *toAddm, process *list);
+char *getLine(FILE *fp);
+
 int main(int argc, char* argv[]){
     
     if (argc != 2){
@@ -26,18 +38,16 @@ int main(int argc, char* argv[]){
         exit(0);
     }
     
-    char buffer[10];
-    
-    char* fileName;
+    char* fileName = malloc(sizeof(char)*50);
     strcpy(fileName, argv[1]);
     
     FILE *fp = fopen(fileName, "r");
-    *pList = parseFile(fp);
+    pList = parseFile(fp);
     fclose(fp);
     initMem();
     firstFit();
     
-    //
+    printf("here\n");
     
     return 0;
 }
@@ -58,7 +68,8 @@ void firstFit(){
     waiting = pList; //all start off waiting
     
     while (waiting != NULL){
-        nextEmpty = getNextEmpty();
+        printf("waiting: %c %d\n",waiting->id, waiting->size);
+		nextEmpty = getNextEmpty();
         if (nextEmpty == 129){
             swap();
         }else {
@@ -66,16 +77,17 @@ void firstFit(){
             if (enoughSpace == 0){ //not enough
                 swap();
             }else { //enough
-                loadToMemory(loaded, nextEmpty); //load to memory
+                loadToMemory(nextEmpty); //load to memory
             }
         }
     }
+printf("here\n");
 }
 
 int getNextEmpty(){
     int i = 0;
     for (i=0;i<TOTALMEM;i++){
-        if (memory[i] == '!');
+        if (memory[i] == '!')
             return i;
         else 
             continue;
@@ -87,10 +99,17 @@ int checkSpace(int spaceStart, int sizeNeeded) {
     int i;
     int count = 0;
     for (i=spaceStart;i<TOTALMEM;i++){
-        if (memory[i] == '!')
-            count++;
-    }
-    if (count<=sizeNeeded)
+        printf("place %d, count %d\n",i,count);
+		if (memory[i] == '!'){
+			count++;
+			if (memory[i+1] != '!')
+				break;
+		}
+    //char c = getchar();
+		
+	}
+printf("count %d sizeneede %d\n",count, sizeNeeded);
+    if (count>=sizeNeeded)
         return 1;
     
     return 0;
@@ -120,26 +139,38 @@ void swap(){
     int i;
     int nextEmpty;
     int enoughSpace;
-    
+
     do {
         process *hold = loaded->next; //hold the rest of the
-        process *last = getLast(waiting);
+        process *last;
         for (i=loaded->startLocation;i<=loaded->endLocation;i++){
             memory[i] = '!';
         }
         loaded->startLocation =129;
         loaded->endLocation = 129;
         loaded->next = NULL;
-        if (last == NULL)
-            waiting = loaded;
-        else
-            last->next = loaded;
+		loaded->numSwaps = loaded->numSwaps + 1;
+        if (loaded->numSwaps<3){
+			last = getLast(waiting);
+			if (last == NULL)
+            	waiting = loaded;
+        	else
+        	    last->next = loaded;
+		}else {
+			last = getLast(finished);
+			if (last ==NULL)
+				finished = loaded;
+			else
+				last->next = loaded;
+		}
         loaded = hold;
         nextEmpty = getNextEmpty();
-        if (nextEmpty != 129)
-            enoughSpace = checkSpace(nextEmpty,waiting->size);
-        else
-            enoughSpace = 0
+        if (nextEmpty != 129){
+            printf("Waiting size: %d\n",waiting->size);
+			enoughSpace = checkSpace(nextEmpty,waiting->size);
+        }else
+            enoughSpace = 0;
+printf("space %d\n",enoughSpace);
     }while (enoughSpace == 0);
     
     loadToMemory(nextEmpty);
@@ -165,9 +196,9 @@ process *getLast (process *list){
 process *parseFile(FILE *fp){
     
     char *token;
-    char *line = malloc(sizeof(char)*15);
+    char *line;
     process *pList = NULL;
-    line = getline(fp, line);
+    line = getLine(fp);
     
     while(line != NULL){
         
@@ -180,10 +211,11 @@ process *parseFile(FILE *fp){
         id = buffer[0];
         token = strtok(NULL, " ");
         size = atol(token);
-        process processToAdd = makeProcess(id, size);
+
+        process *processToAdd = makeProcess(id, size);
         pList = addProcess(processToAdd, pList);
-        
-        line = getLine(fp, line);
+
+        line = getLine(fp);
     }
     return pList;
 }
@@ -201,11 +233,12 @@ process *makeProcess(char id, int size){
 }
 
 process *addProcess(process *toAdd, process *list){
+
     process *temp = list;
     if (temp == NULL){
         list = toAdd;
     }else {
-        while (temp != NULL){
+        while (temp->next != NULL){
             temp = temp->next;
         }
         temp->next = toAdd;
@@ -213,27 +246,23 @@ process *addProcess(process *toAdd, process *list){
     return list;
 }
 
-char* getLine(FILE* fp, char *line){
-    
+char* getLine(FILE *fp){
+    //char line[15];
     if (fp == NULL) {
         printf("Unable to open file.\n");
         exit(0);
     }
-    
-    int maxLen = 15;
-    char *lineBuffer = malloc(sizeof(char)*maxLen);
-    
+    char *lineBuffer = malloc(sizeof(char)*15);
     int count = 0;
     char c;
     c = fgetc(fp);
-    while (c != '\n' && c != EOF){
+	if (c == EOF)
+		return NULL;
+    while (c != '\n'){
         lineBuffer[count] = c;
         count ++;
         c = fgetc(fp);
     }
-    
     lineBuffer[count] = '\0'; 
-    stpcpy(line, lineBuffer);
-    free(lineBuffer);
-    return line;
+    return lineBuffer;
 }
