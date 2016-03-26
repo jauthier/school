@@ -36,6 +36,7 @@ char *getLine(FILE *fp);
 int getNumLoaded(process* list);
 int totalMemInUse();
 int countHoles();
+double average(int *array, int divisor);
 
 int main(int argc, char* argv[]){
     
@@ -127,11 +128,11 @@ void loadToMemory (int startLoc){
         memory[i] = waiting->id; //set the spots in memory so it knows this process it there
     }
     last = getLast(loaded); //see if there are other processes loaded
-    int numLoaded = getNumLoaded(Loaded);
+    int numLoaded = getNumLoaded(loaded);
     holeTotals[totalLoads] = countHoles();
     memTotals[totalLoads] = totalMemInUse();
-    double av = average(memTotals,totalLoads);
-    printf("%c loaded, #processes = %d, #holes = %d %memoryUsage = %d, cumulative %memory = %f\n",waiting->id,numLoaded, countHoles(), totalMemInUse(),av);
+//    double av = average(memTotals,totalLoads);
+    printf("%c loaded, #processes = %d, #holes = %d memoryUsage = %d\n",waiting->id,numLoaded, countHoles(), totalMemInUse());
     if (last == NULL)
         loaded = waiting;
     else 
