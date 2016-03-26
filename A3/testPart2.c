@@ -13,7 +13,10 @@ typedef struct process{
     struct process *next;
 }process;
 
+int totalLoads;
 char memory[TOTALMEM];
+int holeTotals[100];
+int memTotals[100];
 process *pList;
 process *finished;
 process *waiting;
@@ -30,6 +33,9 @@ process *parseFile(FILE *fp);
 process *makeProcess(char id, int size);
 process *addProcess(process *toAddm, process *list);
 char *getLine(FILE *fp);
+int getNumLoaded(process* list);
+int totalMemInUse();
+int countHoles();
 
 int main(int argc, char* argv[]){
     
@@ -45,9 +51,10 @@ int main(int argc, char* argv[]){
     pList = parseFile(fp);
     fclose(fp);
     initMem();
+    totalLoads = 0;
     firstFit();
     
-    printf("here\n");
+    printf("Total Loads = %d \n", totalLoads);
     
     return 0;
 }
@@ -68,7 +75,6 @@ void firstFit(){
     waiting = pList; //all start off waiting
     
     while (waiting != NULL){
-        printf("waiting: %c %d\n",waiting->id, waiting->size);
 		nextEmpty = getNextEmpty();
         if (nextEmpty == 129){
             swap();
@@ -81,7 +87,6 @@ void firstFit(){
             }
         }
     }
-printf("here\n");
 }
 
 int getNextEmpty(){
@@ -99,16 +104,12 @@ int checkSpace(int spaceStart, int sizeNeeded) {
     int i;
     int count = 0;
     for (i=spaceStart;i<TOTALMEM;i++){
-        printf("place %d, count %d\n",i,count);
 		if (memory[i] == '!'){
 			count++;
 			if (memory[i+1] != '!')
 				break;
 		}
-    //char c = getchar();
-		
 	}
-printf("count %d sizeneede %d\n",count, sizeNeeded);
     if (count>=sizeNeeded)
         return 1;
     
@@ -126,11 +127,26 @@ void loadToMemory (int startLoc){
         memory[i] = waiting->id; //set the spots in memory so it knows this process it there
     }
     last = getLast(loaded); //see if there are other processes loaded
+    int numLoaded = getNumLoaded(Loaded);
+    holeTotals[totalLoads] = countHoles();
+    memTotals[totalLoads] = totalMemInUse();
+    double av = average(memTotals,totalLoads);
+    printf("%c loaded, #processes = %d, #holes = %d %memoryUsage = %d, cumulative %memory = %f\n",waiting->id,numLoaded, countHoles(), totalMemInUse(),av);
     if (last == NULL)
         loaded = waiting;
     else 
         last->next = waiting;
     waiting = hold;
+    totalLoads++;
+}
+
+double avrage(int *array, int divisor){
+    int i;
+    double sum=0;
+    for (i=0;i<divisor;i++){
+        sum = sum + array[i];
+    }
+    return sum/divisor;
 }
 
 void swap(){
@@ -166,11 +182,9 @@ void swap(){
         loaded = hold;
         nextEmpty = getNextEmpty();
         if (nextEmpty != 129){
-            printf("Waiting size: %d\n",waiting->size);
 			enoughSpace = checkSpace(nextEmpty,waiting->size);
         }else
             enoughSpace = 0;
-printf("space %d\n",enoughSpace);
     }while (enoughSpace == 0);
     
     loadToMemory(nextEmpty);
@@ -265,4 +279,33 @@ char* getLine(FILE *fp){
     }
     lineBuffer[count] = '\0'; 
     return lineBuffer;
+}
+
+int countHoles(){
+    int i;
+    int count = 0;
+    for (i=0;i<TOTALMEM;i++){
+        if (memory[i]== '!' && memory[i+1] != '!')
+            count++;
+    }
+    return count;
+}
+
+int totalMemInUse(){
+    int i;
+    int count = 0;
+    for (i=0;i<TOTALMEM;i++){
+        if (memory[i] != '!')
+            count++;
+    }
+    return (count/128)*100;
+}
+
+int getNumLoaded(process* list){
+    int num = 0;
+    while (list != NULL){
+        num++;
+		list = list->next;
+    }
+    return num;
 }
