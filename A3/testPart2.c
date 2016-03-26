@@ -2,12 +2,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define TOTALMEM (128)
+
 typeded struct process{
     char id;
     int size;
+    int numSwaps;
+    int startLocation;
+    int endLocation;
     process next;
 }process;
 
+char memory[TOTALMEM];
+process *pList;
+process *finished;
+process *waiting;
+process *loaded;
 
 int main(int argc, char* argv[]){
     
@@ -22,10 +32,134 @@ int main(int argc, char* argv[]){
     strcpy(fileName, argv[1]);
     
     FILE *fp = fopen(fileName, "r");
+    *pList = parseFile(fp);
+    fclose(fp);
+    initMem();
+    firstFit();
     
-    getLine(fp);
+    //
     
+    return 0;
+}
+
+void initMem(){
+    int i = 0;
+    for (i=0;i<TOTALMEM;i++){
+        memory[i] = '!'; //the space is empty
+    }
+}
+
+void firstFit(){
+        
+    int nextEmpty;
+    int enoughSpace;
     
+    printf("First Fit.\n");
+    waiting = pList; //all start off waiting
+    
+    while (waiting != NULL){
+        nextEmpty = getNextEmpty();
+        if (nextEmpty == 129){
+            swap();
+        }else {
+            enoughSpace = checkSpace(nextEmpty, waiting->size);
+            if (enoughSpace == 0){ //not enough
+                swap();
+            }else { //enough
+                loadToMemory(loaded, nextEmpty); //load to memory
+            }
+        }
+    }
+}
+
+int getNextEmpty(){
+    int i = 0;
+    for (i=0;i<TOTALMEM;i++){
+        if (memory[i] == '!');
+            return i;
+        else 
+            continue;
+    }
+    return 129; //check for this then will know all spots are taken
+}
+
+int checkSpace(int spaceStart, int sizeNeeded) {
+    int i;
+    int count = 0;
+    for (i=spaceStart;i<TOTALMEM;i++){
+        if (memory[i] == '!')
+            count++;
+    }
+    if (count<=sizeNeeded)
+        return 1;
+    
+    return 0;
+}
+
+void loadToMemory (int startLoc){
+    int i;
+    process *hold = waiting->next; //hold the next one waiting
+    process *last;
+    waiting->next = NULL;
+    waiting->startLocation = startLoc;
+    waiting->endLocation = startLoc + waiting->size - 1;
+    for (i=startLoc;i<=waiting->endLocation;i++){
+        memory[i] = waiting->id; //set the spots in memory so it knows this process it there
+    }
+    last = getLast(loaded); //see if there are other processes loaded
+    if (last == NULL)
+        loaded = waiting;
+    else 
+        last->next = waiting;
+    waiting = hold;
+}
+
+void swap(){
+    //swap out the first one in the loaded queue
+    //take it out then check again
+    int i;
+    int nextEmpty;
+    int enoughSpace;
+    
+    do {
+        process *hold = loaded->next; //hold the rest of the
+        process *last = getLast(waiting);
+        for (i=loaded->startLocation;i<=loaded->endLocation;i++){
+            memory[i] = '!';
+        }
+        loaded->startLocation =129;
+        loaded->endLocation = 129;
+        loaded->next = NULL;
+        if (last == NULL)
+            waiting = loaded;
+        else
+            last->next = loaded;
+        loaded = hold;
+        nextEmpty = getNextEmpty();
+        if (nextEmpty != 129)
+            enoughSpace = checkSpace(nextEmpty,waiting->size);
+        else
+            enoughSpace = 0
+    }while (enoughSpace == 0);
+    
+    loadToMemory(nextEmpty);
+}
+
+
+
+
+process *getLast (process *list){
+
+    process *tempList;
+	if ( list == NULL)
+		tempList = NULL;
+	else {
+    	tempList = list;
+    	while(tempList->next != NULL){
+        	tempList = tempList->next;
+    	}
+    }
+    return tempList;
 }
 
 process *parseFile(FILE *fp){
@@ -40,7 +174,6 @@ process *parseFile(FILE *fp){
         char buffer[2];
         char id;
         int size;
-        //pineapple
         
         token = strtok(line, " ");
         strcpy(buffer, token);
@@ -48,11 +181,11 @@ process *parseFile(FILE *fp){
         token = strtok(NULL, " ");
         size = atol(token);
         process processToAdd = makeProcess(id, size);
-        list = addProcess(processToAdd<);
+        pList = addProcess(processToAdd, pList);
         
         line = getLine(fp, line);
     }
-    
+    return pList;
 }
 
 process *makeProcess(char id, int size){
@@ -60,6 +193,9 @@ process *makeProcess(char id, int size){
     newProcess = malloc(sizeof(process));
     newProcess->id = id;
     newProcess->size = size;
+    newProcess->numSwaps = 0;
+    newProcess->startLocation = 129; //not in memory
+    newProcess->endLocation = 129; //not in memory
     newProcess->next = NULL;
     return newProcess;
 }
