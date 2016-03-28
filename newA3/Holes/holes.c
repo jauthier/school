@@ -14,9 +14,10 @@ typedef struct process{
 }process;
 
 int totalLoads;
-char memory[TOTALMEM];
-int holeTotals[100];
-int memTotals[100];
+char memory[TOTALMEM]; //memory
+double holeTotals[100];
+double memUseTotals[100];
+double numLoads[100];
 process *pList;
 process *finished;
 process *waiting;
@@ -34,9 +35,9 @@ process *makeProcess(char id, int size);
 process *addProcess(process *toAddm, process *list);
 char *getLine(FILE *fp);
 int getNumLoaded(process* list);
-int totalMemInUse();
+double totalMemInUse();
 int countHoles();
-double average(int *array, int divisor);
+double average(double *array, int divisor);
 
 int main(int argc, char* argv[]){
     
@@ -54,8 +55,9 @@ int main(int argc, char* argv[]){
     initMem();
     totalLoads = 0;
     firstFit();
-    
-    printf("Total Loads = %d \n", totalLoads);
+    double avLoads = average(numLoads,totalLoads);
+    double avHoles = average(holeTotals, totalLoads);
+	printf("Total Loads = %d, average#processes = %.2f%%, averageholes = %.2f \n", totalLoads, avLoads, avHoles);
     
     return 0;
 }
@@ -127,21 +129,23 @@ void loadToMemory (int startLoc){
     for (i=startLoc;i<=waiting->endLocation;i++){
         memory[i] = waiting->id; //set the spots in memory so it knows this process it there
     }
-    last = getLast(loaded); //see if there are other processes loaded
-    int numLoaded = getNumLoaded(loaded);
+
+    numLoads[totalLoads] = getNumLoaded(loaded) + 1; //add the current one
     holeTotals[totalLoads] = countHoles();
-    memTotals[totalLoads] = totalMemInUse();
-//    double av = average(memTotals,totalLoads);
-    printf("%c loaded, #processes = %d, #holes = %d memoryUsage = %d\n",waiting->id,numLoaded, countHoles(), totalMemInUse());
+    memUseTotals[totalLoads] = totalMemInUse();
+    double av = average(memUseTotals,totalLoads+1);
+    printf("%c loaded, #processes = %.0f, #holes = %d memoryUsage = %.2f %%, cumulative = %.2f %%\n",waiting->id, numLoads[totalLoads], countHoles(), memUseTotals[totalLoads], av);
+
+    last = getLast(loaded); //see if there are other processes loaded
     if (last == NULL)
         loaded = waiting;
-    else 
+    else
         last->next = waiting;
     waiting = hold;
     totalLoads++;
 }
 
-double avrage(int *array, int divisor){
+double average(double *array, int divisor){
     int i;
     double sum=0;
     for (i=0;i<divisor;i++){
@@ -292,9 +296,9 @@ int countHoles(){
     return count;
 }
 
-int totalMemInUse(){
+double totalMemInUse(){
     int i;
-    int count = 0;
+    double count = 0;
     for (i=0;i<TOTALMEM;i++){
         if (memory[i] != '!')
             count++;
