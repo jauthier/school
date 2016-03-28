@@ -1,23 +1,41 @@
 Assignment 3
+~~~~~~~~~~~~~~~~~~~
+CIS 3110
+Mar. 25, 2016
+Author: Jessica Authier, 0849720
 
-Jessica Authier
-0849720
+~~~~~~~~~~~~~~~~~~~
+References:
+	
+	In dine.c
+		lines: 58-64, 93-100, 105, 107, 112, 114
+		were insiped by https://docs.oracle.com/cd/E19205-01/820-0619/gepji/index.html
+		
+	In holes.c
+		lines: 201-213
+		was taken from my assignment 2, main.c
+		
+		lines: 268-287
+		was taken from my assignment 2, getThreads.c
+		
+~~~~~~~~~~~~~~~~~~~
+Compiling and Running:
 
-~~~~~~~~~~~~~~~~
-dine.c used doc.oracle.com/cd/... , can google dinning philosophers in c to find it
-For inspiration and help
+	Dining Philosophers:
+		to complie type 'make'.
+		the make file looks like 'gcc -pthread -Wall -pedantic -std=c99 dine.c -o dine'
+		
+		to run type './dine <number of philosophers> <number of times they eat>'
+		
+	Memory Management:
+		to compile type 'make'
+		the make file looks like 'gcc -Wall -pedantic -std=c99 holes.c -o holes'
+		
+		to run type './holes <fileName>'
+	
+~~~~~~~~~~~~~~~~~~~
+Limitations:
 
-used some of my code from A2 in holes.c
-
-~~~~~~~~~~~~~~~~~
-
-both programs have make files to compile and are run exactly 
-like in the assignment instructions
+	The memory management program only impliments first fit 
 
 
-~~~~~~~~
-had problems accessing longbottom, so tested everything on
-my ubuntu vm.
-
-Also I was without power for a while on friday and wasn't able to get as much
-done as i would have liked.
