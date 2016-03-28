@@ -1,2 +1,2 @@
 all:
-	gcc -pthreads -Wall -pedantic -std=c99 dine.c -o dine
+	gcc -pthread -Wall -pedantic -std=c99 dine.c -o dine
