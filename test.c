@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+
+#define TRUE 1;
+#define FALSE 0;
+
+
+void sigEnd(int sigNum, siginfo_t *signalInfo, void* hold);
+int checkBackground(char *str);
 
 int main(){
 
@@ -9,14 +17,23 @@ int main(){
     char *path = "/bin/";
     char fullPath[20];
     int numArgs;
+	int inBackground;
+
+
 
     while (1){
 		printf(">");
 		fgets(buffer, 500, stdin);
 
+		//checks if the command is exit
+		if (strcmp(buffer, "exit")==0){
+			printf("logout\n\n[Process completed]\n");
+			exit(0);
+		}
+
 		char *token = strtok(buffer, " \n");
 		int i = 0;
-
+		//parse the comand line input
 		while (token != NULL){
 			args[i] = token;
 			token = strtok(NULL, " \n");
@@ -25,33 +42,38 @@ int main(){
 		args[i] = NULL;
 		numArgs = i;
 
-		/*for (i=0;i<numArgs;i++){
-			printf("%s",args[i]);
-		}*/
-		
-		//printf("%s",fullPath);
+		inBackground = 0;
 
-		int pid = fork();
+		for (i=0;i<numArgs;i++){
+			printf("%s",args[i]);
+		}
+
+		pid_t pid = fork();
+
+		struct sigaction endSignal;
+		endSignal.sa_sigaction = sigEnd;
+
 		if (pid == 0){
 			printf("\nIn child process\n");
-			if (checkPipe(buffer)==1){
-            
-			} else if (checkInRedir(buffer)==1){
-             
-			} else if (checkOutRedir(buffer)==1){
 
-			} else if (checkBackground(buffer)==1){
+			if (checkBackground(buffer)==1){
+				inBackground = 1;
+			}
 
-			}else {
+			printf("%d",inBackground);
+			if (inBackground == 1){
+				execProcessInBack(args);
+			} else{
 				execProcess(args);
-			}	
+			}
 		}else if (pid > 0){
 			printf("\nIn parent process\n");
 			wait(NULL);
 			printf("\nChild exited\n");
+			sigaction(SIGCHLD,&endSignal, NULL);
+
 		}else {
-			//error
-			
+			printf("Forking failed");
 		}
 
 
@@ -62,8 +84,20 @@ int execProcess(char **args){
 	char fullPath[20];
 
 	strcpy(fullPath, path);
-	srtcat(fullPath, args[0]);
+	strcat(fullPath, args[0]);
 	execvp(fullPath, args);
+}
+
+int execProcessInBack(char **args){
+	
+}
+
+void sigEnd(int sigNum, siginfo_t *signalInfo, void* hold){
+
+	if (sigNum == SIGINT){
+		printf("goodBye");
+		exit(0);
+	}
 }
 
 /*returns 1 if there is a |*/

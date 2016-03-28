@@ -9,15 +9,13 @@
 #include <errno.h>
 #include <signal.h>
 
-#include <piping.h>
-#include <history.h>
-#include <redirection.h>
-#include <execute.h>
+#include "piping.h"
+#include "redirection.h"
 
 int writeHistory(char *toWrite);
 void readHistory();
 void clearHistory();
-int readnEntries(cahr* arg);
+int readnEntries(char* arg);
 char *getCWD();
 char *changeCWD(char* dir);
 void menu(char** args, int i);
@@ -131,6 +129,7 @@ int writeHistory(char *toWrite){
 
     fclose(fp);
     free(fileName);
+    return 0;
 }
 
 void readHistory(){
@@ -163,7 +162,7 @@ void clearHistory(){
     FILE* fp;
     fp = fopen(fileName,"w");
     if (fp == NULL)
-        printf("%S: No such file or direcotry\n");
+        printf("%s: No such file or direcotry\n",fileName);
 
     fprintf(fp,"");
     
@@ -181,14 +180,15 @@ int readnEntries(char *arg){
     } else{
         
         int numEntries = strtol(arg, &endPtr,10);
-        char *fileName = malloc(sizeof(char)*100);
+        char buffer[100];
+		char *fileName = malloc(sizeof(char)*100);
         strcpy(fileName, rootDir);
         strcat(fileName,"/");
         strcat(fileName,".CIS3110_history");
         FILE* fp;
         fp = fopen(fileName,"w");
         if (fp == NULL)
-            printf("%S: No such file or direcotry\n");
+            printf("%s: No such file or direcotry\n",fileName);
         
         int count = 1;
         while ((fgets(buffer,100,fp)!= NULL) && (count != numEntries)){

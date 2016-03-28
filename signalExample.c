@@ -12,7 +12,7 @@
 void endSignalRoutine(int signal, siginfo_t *signalInfo, void *hold);
 
 int main(int argc, char** argv){
-    pid_t childPID;
+    pid_t childPID;//for forking
 
     if(argc < 2) {
         printf("\nUsage: enter the number of seconds for child process to sleep as a command line argument.\n\n");
@@ -22,7 +22,7 @@ int main(int argc, char** argv){
     //declare our signal handler.
     struct sigaction test;
 
-    test.sa_sigaction = endSignalRoutine;
+    test.sa_sigaction = endSignalRoutine;//identifies the signal catching function
 
     childPID = fork();
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv){
 
 
 
-
+//signal catching function
 void endSignalRoutine(int signal, siginfo_t *signalInfo, void *hold)
 {
     printf("Process %d completed.\n", signalInfo->si_pid);

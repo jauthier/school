@@ -1,5 +1,5 @@
 
-#include <piping.h>
+#include "piping.h"
 
 /*returns 1 if there is a |*/
 int checkPipe(char **args, int numArgs){

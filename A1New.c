@@ -49,15 +49,21 @@ int main(int argc, char * argv[]){
 		}
 		args[i] = NULL;
 		printf("before");
-		
+
+		if (checkBackground(args,i) == 1){
+			args[i-1] = NULL;
+			isBackground = 1;
+		}
+
 		pid_t pid = fork();
 		int type = 0;
 		int status = 0;
-		
+
 		if (pid >= 0){
 			if (pid == 0){
 				printf("In Child");
 				menu(args,i);
+				exit(status);
 			}else{
 				printf("In Parent\n");
 				if (isBackground==1)
@@ -69,10 +75,6 @@ int main(int argc, char * argv[]){
 			printf("Fork Failed\n");
 		}
 		
-		if (checkBackground(args,i) == 1){
-			args[i-1] = NULL;
-			isBackground = 1;
-		}
 	}
 }
 
@@ -88,10 +90,10 @@ void menu(char** args, int i){
 		printf("<");
 	}else if (checkOutRedir(args, i)==1){
 		printf(">");
-		//outRedir(args,i);
+		outRedir(args,i);
 	}else{
 		printf("cat");
-		//execProcess(args);
+		execProcess(args);
 	}
 }
 
@@ -134,6 +136,7 @@ int checkInRedir(char **args, int numArgs){
 /*returns 1 if ther is a >*/
 int checkOutRedir(char **args, int numArgs){
 
+	printf("here");
 	int i = 0;
 
 	for (i=0;i<numArgs;i++){
